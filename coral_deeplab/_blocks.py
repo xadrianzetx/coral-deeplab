@@ -60,6 +60,9 @@ def deeplab_aspp_module(inputs: tf.Tensor, dilation_rates: list,
 def deeplab_decoder(inputs: tf.Tensor, skip_con: tf.Tensor,
                     n_classes: int, bn_epsilon: float) -> tf.Tensor:
     """
+    Notes
+    -----
+    Using output stride 8
     """
 
     if n_classes > 50:
@@ -68,26 +71,23 @@ def deeplab_decoder(inputs: tf.Tensor, skip_con: tf.Tensor,
               ' Consider decreasing number of'
               ' segmentation classes.')
 
-    skip = tf.keras.layers.Conv2D(48, 1, padding='same', use_bias=False,
-                                  name='project_0')(skip_con)
-    skip = tf.keras.layers.BatchNormalization(epsilon=bn_epsilon)(skip)
-    skip = tf.keras.layers.ReLU()(skip)
+    skip = Conv2D(48, 1, padding='same', use_bias=False,
+                  name='project_0')(skip_con)
+    skip = BatchNormalization(epsilon=bn_epsilon)(skip)
+    skip = ReLU()(skip)
 
     aspp_up = UpSampling2D(size=(4, 4), interpolation='bilinear')(inputs)
-    x = tf.keras.layers.Concatenate()([aspp_up, skip])
+    x = Concatenate()([aspp_up, skip])
 
-    x = tf.keras.layers.SeparableConv2D(256, 3, padding='same',
-                                        use_bias=False)(x)
-    x = tf.keras.layers.BatchNormalization(epsilon=bn_epsilon)(x)
-    x = tf.keras.layers.ReLU()(x)
+    x = SeparableConv2D(256, 3, padding='same', use_bias=False)(x)
+    x = BatchNormalization(epsilon=bn_epsilon)(x)
+    x = ReLU()(x)
 
-    x = tf.keras.layers.SeparableConv2D(256, 3, padding='same',
-                                        use_bias=False)(x)
-    x = tf.keras.layers.BatchNormalization(epsilon=bn_epsilon)(x)
-    x = tf.keras.layers.ReLU()(x)
+    x = SeparableConv2D(256, 3, padding='same', use_bias=False)(x)
+    x = BatchNormalization(epsilon=bn_epsilon)(x)
+    x = ReLU()(x)
 
-    outputs = tf.keras.layers.SeparableConv2D(n_classes, 3, padding='same',
-                                              use_bias=False)(x)
+    outputs = SeparableConv2D(n_classes, 3, padding='same', use_bias=False)(x)
     outputs = UpSampling2D(size=(4, 4), interpolation='bilinear')(outputs)
 
     return outputs
