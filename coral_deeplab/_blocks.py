@@ -17,8 +17,41 @@ from coral_deeplab.layers import UpSampling2D
 def inverted_res_block(inputs: tf.Tensor, project_channels: int,
                        block_num: int, expand_channels: int = 960,
                        expand: bool = False, skip: bool = False) -> tf.Tensor:
+    """Modified MobileNetV2 inverted residual block.
+
+    This implementation uses dilated convolution in its depthwise
+    layer, which preserves spatial dimentions throught the layers
+    (image has the same size in and out).
+
+    Arguments
+    ---------
+    inputs : tf.Tensor
+        Input tensor.
+
+    project_channels : int
+        Number of feature maps to produce
+        in project layer.
+
+    block_num : int
+        Residual block number
+        (used for layer naming).
+
+    expand_channels : int, default=960
+        Number of feature maps to produce
+        in expand layer (if used).
+
+    expand : bool, default=False
+        If true, expand layer is used in block.
+
+    skip : bool, default=False
+        If true, skip connection is used in block.
+
+    Returns
+    -------
+    x : tf.Tensor
+        Output tensor.
     """
-    """
+
     block_name = f'block_{block_num}'
     x = inputs
 
