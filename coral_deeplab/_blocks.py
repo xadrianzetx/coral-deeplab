@@ -2,9 +2,11 @@ import tensorflow as tf
 from tensorflow.keras.layers import (
     Conv2D,
     SeparableConv2D,
+    DepthwiseConv2D,
     BatchNormalization,
     GlobalAveragePooling2D,
     Concatenate,
+    Add,
     Lambda,
     ReLU
 )
@@ -12,8 +14,35 @@ from tensorflow.keras.layers import (
 from coral_deeplab.layers import UpSampling2D
 
 
-def inverted_res_block():
-    pass
+def inverted_res_block(inputs: tf.Tensor, project_channels: int,
+                       block_num: int, expand_channels: int = 960,
+                       expand: bool = False, skip: bool = False) -> tf.Tensor:
+    """
+    """
+    block_name = f'block_{block_num}'
+    x = inputs
+
+    if expand:
+        x = Conv2D(expand_channels, 1, padding='same', use_bias=False,
+                   name=f'{block_name}_expand')(x)
+        x = BatchNormalization(name=f'{block_name}_expand_bn')(x)
+        x = ReLU(6, name=f'{block_name}_expand_relu')(x)
+
+    # depthwise
+    x = DepthwiseConv2D(3, padding='same', dilation_rate=2,
+                        use_bias=False, name=f'{block_name}_depthwise')(x)
+    x = BatchNormalization(name=f'{block_name}_depthwise_bn')(x)
+    x = ReLU(6, name=f'{block_name}_depthwise_relu')(x)
+
+    # project
+    x = Conv2D(project_channels, 1, padding='same', use_bias=False,
+               name=f'{block_name}_project')(x)
+    x = BatchNormalization(name=f'{block_name}_project_bn')(x)
+
+    if skip:
+        x = Add(name=f'{block_name}_add')([x, inputs])
+
+    return x
 
 
 def deeplab_aspp_module(inputs: tf.Tensor, dilation_rates: list,
