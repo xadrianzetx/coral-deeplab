@@ -80,7 +80,26 @@ def inverted_res_block(inputs: tf.Tensor, project_channels: int,
 
 def deeplab_aspp_module(inputs: tf.Tensor, dilation_rates: list,
                         bn_epsilon: float) -> tf.Tensor:
-    """
+    """Implements Atrous Spatial Pyramid Pooling module.
+
+    Arguments
+    ---------
+    inputs : tf.Tensor
+        Input tensor.
+
+    dilation_rates : list
+        List with 3 integers - dilation
+        rates used in ASPP branches 1-3.
+        Should be multiples of 3 according
+        to paper.
+
+    bn_epsilon : float
+        Epsilon used in batch normalization layer.
+
+    Returns
+    -------
+    outputs : tf.Tensor
+        Output tensor.
     """
 
     # aspp branch 0
@@ -121,10 +140,33 @@ def deeplab_aspp_module(inputs: tf.Tensor, dilation_rates: list,
 
 def deeplab_decoder(inputs: tf.Tensor, skip_con: tf.Tensor,
                     n_classes: int, bn_epsilon: float) -> tf.Tensor:
-    """
+    """Implements DeepLabV3Plus decoder module.
+
+    Arguments
+    ---------
+    inputs : tf.Tensor
+        Input tensor.
+
+    skip_con : tf.Tensor
+        Encoder tensor used
+        in skip connection.
+
+    n_classes : int
+        Final number of feature maps.
+
+    bn_epsilon : float
+        Epsilon used in batch
+        normalization layer.
+
+    Returns
+    -------
+    outputs : tf.Tensor
+        Output tensor.
+
     Notes
     -----
-    Using output stride 8
+    This implementation is using output stride 16.
+    Outputs logits. There is no final activation layer.
     """
 
     if n_classes > 50:
