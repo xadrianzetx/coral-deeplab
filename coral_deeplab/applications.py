@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import numpy as np
 import tensorflow as tf
 
 from coral_deeplab._blocks import (
@@ -29,10 +30,22 @@ from coral_deeplab._blocks import (
 )
 
 
-def CoralDeepLabV3Plus(input_shape: tuple, n_classes: int,
-                       **kwargs) -> tf.keras.Model:
+def CoralDeepLabV3Plus(input_shape: tuple = (224, 224, 3),
+                       n_classes: int = 30, **kwargs) -> tf.keras.Model:
     """
     """
+
+    if np.argmin(input_shape) == 0:
+        # assuming channels always
+        # gonna be smallest number
+        raise ValueError('Channels-first not supported.')
+
+    if input_shape[0] != input_shape[1]:
+        raise ValueError('Non square inputs not supported.')
+
+    supported_shapes = [96, 128, 160, 192, 224]
+    if input_shape[0] not in supported_shapes:
+        raise ValueError(f'Image shape not in {supported_shapes}')
 
     encoder = tf.keras.applications.MobileNetV2(
         input_shape=input_shape,
