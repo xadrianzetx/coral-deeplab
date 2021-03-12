@@ -20,6 +20,7 @@ setup(
     classifiers=[],
     python_requires='>=3.7',
     install_requires=[
+        'numpy>=1.19.5',
         'tensorflow>=2.4.0'
     ]
 )
