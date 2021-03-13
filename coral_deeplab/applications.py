@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+__all__ = ['CoralDeepLabV3Plus']
+
 import numpy as np
 import tensorflow as tf
 
@@ -71,6 +73,13 @@ def CoralDeepLabV3Plus(input_shape: tuple = (224, 224, 3),
     grater input shape will result in error, and setting greater
     number of output classes might result in model not fully mapping
     to Edge TPU.
+
+    Examples
+    --------
+    >>> import coral_deeplab as cdl
+    >>> model = cdl.applications.CoralDeepLabV3Plus()
+    >>> print(model.name)
+    'CoralDeepLabV3Plus'
     """
 
     if np.argmin(input_shape) == 0:
@@ -99,11 +108,15 @@ def CoralDeepLabV3Plus(input_shape: tuple = (224, 224, 3),
     x = inverted_res_block(x, 160, expand=True, skip=True, block_num=15)
     aspp_in = inverted_res_block(x, 320, expand=True, block_num=16)
 
+    # dilation rates are halved due to some unknown limitation
+    # in DepthwiseConv2D op suppot
+    # https://coral.ai/docs/edgetpu/models-intro/#supported-operations
     dilation_rates = [3, 6, 9]
     bn_eps = 1e-5
+    name = 'CoralDeepLabV3Plus'
 
     aspp_out = deeplab_aspp_module(aspp_in, dilation_rates, bn_eps)
     outputs = deeplab_decoder(aspp_out, encoder_maps, n_classes, bn_eps)
-    model = tf.keras.Model(inputs=encoder.inputs, outputs=outputs)
+    model = tf.keras.Model(inputs=encoder.inputs, outputs=outputs, name=name)
 
     return model
