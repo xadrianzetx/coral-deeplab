@@ -1,10 +1,11 @@
 import os
+import re
 import sys
+import uuid
 import unittest
 import subprocess
 import numpy as np
 import tensorflow as tf
-from uuid import uuid4
 
 import coral_deeplab as cdl
 
@@ -31,7 +32,7 @@ def quantize_and_compile(model, dataset):
 
     # quantize
     quantized = converter.convert()
-    model_name = f'{uuid4()}.tflite'
+    model_name = f'{uuid.uuid4()}.tflite'
     model_path = os.path.join(os.getcwd(), model_name)
     open(model_path, 'wb').write(quantized)
 
@@ -69,7 +70,19 @@ class TestCoralDeepLabV3Plus(unittest.TestCase):
 
     @unittest.skipUnless(sys.platform.startswith('linux'), 'linux required')    
     def test_edgetpu_compiles(self):
-        pass
+        """Test if model compiles to Edge TPU across input ranges"""
+
+        supported_shapes = [96, 128, 160, 192, 224]
+        for shape in supported_shapes:
+            input_shape = (shape, shape, 3)
+            model = cdl.applications.CoralDeepLabV3Plus(input_shape)
+            datagen = fake_dataset_generator(input_shape, 10)
+            stdout = quantize_and_compile(model, datagen)
+            compiled = re.findall('Model compiled successfully', stdout)
+
+            if not compiled:
+                msg = f'Model not compiled for shape {input_shape}'
+                self.fail(msg)
 
 
 if __name__ == '__main__':
