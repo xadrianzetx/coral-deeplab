@@ -17,7 +17,11 @@ setup(
     description='Coral Edge TPU compilable version of DeepLab v3 Plus',
     long_description=get_long_desc(),
     long_description_content_type='text/markdown',
-    classifiers=[],
+    classifiers=[
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence'
+    ],
     python_requires='>=3.7',
     install_requires=[
         'numpy>=1.19.5',
