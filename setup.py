@@ -25,6 +25,6 @@ setup(
     python_requires='>=3.7',
     install_requires=[
         'numpy>=1.19.5',
-        'tensorflow>=2.4.0'
+        'tensorflow-gpu>=2.4.0'
     ]
 )
