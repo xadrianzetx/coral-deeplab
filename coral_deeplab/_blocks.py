@@ -147,15 +147,14 @@ def deeplab_aspp_module(inputs: tf.Tensor, dilation_rates: list,
     b4 = Lambda(lambda t: t[:, tf.newaxis, tf.newaxis, :])(b4)
     b4 = UpSampling2D(size=size, interpolation='bilinear')(b4)
     b4 = Conv2D(256, 1, padding='same', use_bias=False, name='aspp4')(b4)
-    b4 = BatchNormalization(name='aspp4_bn', epsilon=bn_epsilon)(b4)
+    b4 = BatchNormalization(epsilon=bn_epsilon, name='aspp4_bn')(b4)
     b4 = ReLU(name='aspp4_relu')(b4)
 
     # concat and pointwise conv
-    # TODO names
-    x = Concatenate()([b0, *dilated_branches, b4])
-    x = Conv2D(256, 1, padding='same', use_bias=False)(x)
-    x = BatchNormalization(epsilon=bn_epsilon)(x)
-    outputs = ReLU()(x)
+    x = Concatenate(name='aspp_concat')([b0, *dilated_branches, b4])
+    x = Conv2D(256, 1, padding='same', use_bias=False, name='aspp')(x)
+    x = BatchNormalization(epsilon=bn_epsilon, name='aspp_bn')(x)
+    outputs = ReLU(name='aspp_relu')(x)
 
     return outputs
 
