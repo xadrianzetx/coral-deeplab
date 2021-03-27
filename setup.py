@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 from coral_deeplab import __version__
 
@@ -17,6 +17,7 @@ setup(
     description='Coral Edge TPU compilable version of DeepLab v3 Plus',
     long_description=get_long_desc(),
     long_description_content_type='text/markdown',
+    packages=find_packages(include=['coral_deeplab']),
     classifiers=[
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
