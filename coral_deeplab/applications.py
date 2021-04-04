@@ -97,7 +97,7 @@ def CoralDeepLabV3Plus(input_shape: tuple = (224, 224, 3),
     encoder = tf.keras.applications.MobileNetV2(
         input_shape=input_shape,
         include_top=False,
-        weights=None
+        weights='imagenet'
     )
 
     encoder_maps = encoder.get_layer('block_3_expand_relu').output
