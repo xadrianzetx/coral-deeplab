@@ -71,3 +71,14 @@ class UpSampling2DCompatV1(tf.keras.layers.Layer):
             method=self.interpolation,
             align_corners=self.align_corners
         )
+
+    def get_config(self) -> dict:
+
+        config = super().get_config()
+        config.update({
+            'size': self.size,
+            'interpolation': self.interpolation,
+            'align_corners': self.align_corners
+        })
+
+        return config
