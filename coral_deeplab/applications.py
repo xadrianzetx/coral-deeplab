@@ -32,8 +32,8 @@ from coral_deeplab._blocks import (
 )
 
 
-def CoralDeepLabV3Plus(input_shape: tuple = (224, 224, 3),
-                       n_classes: int = 30, **kwargs) -> tf.keras.Model:
+def CoralDeepLabV3Plus(input_shape: tuple = (224, 224, 3), n_classes: int = 30,
+                       weights: str = 'imagenet', **kwargs) -> tf.keras.Model:
     """DeepLab v3 Plus implementation fully compilable to coral.ai Edge TPU.
 
     Implementation follows original paper as close as possible, while still
@@ -97,7 +97,7 @@ def CoralDeepLabV3Plus(input_shape: tuple = (224, 224, 3),
     encoder = tf.keras.applications.MobileNetV2(
         input_shape=input_shape,
         include_top=False,
-        weights='imagenet'
+        weights=weights
     )
 
     encoder_maps = encoder.get_layer('block_3_expand_relu').output
