@@ -10,7 +10,7 @@ class TestLayers(unittest.TestCase):
         """Tests output shape after upsampling"""
 
         inputs = np.random.randn(1, 10, 10, 3)
-        x = cdl.layers.UpSampling2D((2, 2))(inputs)
+        x = cdl.layers.UpSampling2DCompatV1((2, 2))(inputs)
         outputs = x.numpy()
         test = outputs.shape == (1, 20, 20, 3)
         self.assertTrue(test)
@@ -20,7 +20,7 @@ class TestLayers(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             inputs = np.random.randn(1, 10, 10, 3)
-            cdl.layers.UpSampling2D(interpolation='foo')(inputs)
+            cdl.layers.UpSampling2DCompatV1(interpolation='foo')(inputs)
 
 
 if __name__ == 'main':

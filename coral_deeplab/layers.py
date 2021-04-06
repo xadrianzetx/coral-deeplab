@@ -24,7 +24,7 @@ import numpy as np
 import tensorflow as tf
 
 
-class UpSampling2D(tf.keras.layers.Layer):
+class UpSampling2DCompatV1(tf.keras.layers.Layer):
     """Upsampling layer using tensorflow
     v1 resize implementation.
 
