@@ -33,7 +33,7 @@ from tensorflow.keras.layers import (
     ReLU
 )
 
-from coral_deeplab.layers import UpSampling2D
+from coral_deeplab.layers import UpSampling2DCompatV1
 
 
 def inverted_res_block(inputs: tf.Tensor, project_channels: int,
@@ -145,7 +145,7 @@ def deeplab_aspp_module(inputs: tf.Tensor, dilation_rates: list,
     _, *size, _ = tf.keras.backend.int_shape(inputs)
     b4 = GlobalAveragePooling2D(name='aspp4_pooling')(inputs)
     b4 = Lambda(lambda t: t[:, tf.newaxis, tf.newaxis, :])(b4)
-    b4 = UpSampling2D(size=size, interpolation='bilinear')(b4)
+    b4 = UpSampling2DCompatV1(size=size, interpolation='bilinear')(b4)
     b4 = Conv2D(256, 1, padding='same', use_bias=False, name='aspp4')(b4)
     b4 = BatchNormalization(epsilon=bn_epsilon, name='aspp4_bn')(b4)
     b4 = ReLU(name='aspp4_relu')(b4)
@@ -201,7 +201,7 @@ def deeplab_decoder(inputs: tf.Tensor, skip_con: tf.Tensor,
     skip = BatchNormalization(epsilon=bn_epsilon)(skip)
     skip = ReLU()(skip)
 
-    aspp_up = UpSampling2D(size=(4, 4), interpolation='bilinear')(inputs)
+    aspp_up = UpSampling2DCompatV1(size=(4, 4), interpolation='bilinear')(inputs)
     x = Concatenate()([aspp_up, skip])
 
     x = SeparableConv2D(256, 3, padding='same', use_bias=False)(x)
@@ -213,6 +213,6 @@ def deeplab_decoder(inputs: tf.Tensor, skip_con: tf.Tensor,
     x = ReLU()(x)
 
     outputs = SeparableConv2D(n_classes, 3, padding='same', use_bias=False)(x)
-    outputs = UpSampling2D(size=(4, 4), interpolation='bilinear')(outputs)
+    outputs = UpSampling2DCompatV1(size=(4, 4), interpolation='bilinear')(outputs)
 
     return outputs
