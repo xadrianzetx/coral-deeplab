@@ -24,7 +24,7 @@ import numpy as np
 import tensorflow as tf
 
 
-class UpSampling2D(tf.keras.layers.Layer):
+class UpSampling2DCompatV1(tf.keras.layers.Layer):
     """Upsampling layer using tensorflow
     v1 resize implementation.
 
@@ -71,3 +71,14 @@ class UpSampling2D(tf.keras.layers.Layer):
             method=self.interpolation,
             align_corners=self.align_corners
         )
+
+    def get_config(self) -> dict:
+
+        config = super().get_config()
+        config.update({
+            'size': self.size,
+            'interpolation': self.interpolation,
+            'align_corners': self.align_corners
+        })
+
+        return config
