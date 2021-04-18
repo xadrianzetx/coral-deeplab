@@ -11,7 +11,7 @@ class TestLayers(unittest.TestCase):
         """Tests output shape after upsampling"""
 
         inputs = np.random.randn(1, 10, 10, 3)
-        x = cdl.layers.UpSampling2DCompatV1((2, 2))(inputs)
+        x = cdl.layers.UpSampling2DCompatV1((20, 20))(inputs)
         outputs = x.numpy()
         test = outputs.shape == (1, 20, 20, 3)
         self.assertTrue(test)
@@ -21,14 +21,14 @@ class TestLayers(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             inputs = np.random.randn(1, 10, 10, 3)
-            cdl.layers.UpSampling2DCompatV1(interpolation='foo')(inputs)
+            cdl.layers.UpSampling2DCompatV1((20, 20), interpolation='foo')(inputs)
 
     def test_upsampling2d_serialize_deserialize(self):
         """Test layer serialization and deserialization"""
 
         def testmodel():
             inputs = tf.keras.layers.Input((10, 10, 3))
-            outputs = cdl.layers.UpSampling2DCompatV1((2, 2))(inputs)
+            outputs = cdl.layers.UpSampling2DCompatV1((20, 20))(inputs)
             return tf.keras.Model(inputs=inputs, outputs=outputs)
 
         model = testmodel()
