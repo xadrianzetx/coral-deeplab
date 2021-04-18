@@ -20,8 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import numpy as np
 import tensorflow as tf
+from typing import Tuple
 
 
 class UpSampling2DCompatV1(tf.keras.layers.Layer):
@@ -43,13 +43,13 @@ class UpSampling2DCompatV1(tf.keras.layers.Layer):
         at the corner pixels.
     """
 
-    def __init__(self, size: tuple = (2, 2),
+    def __init__(self, output_shape: Tuple[int, int],
                  interpolation: str = 'nearest',
                  align_corners: bool = False,
                  **kwargs):
 
         super().__init__()
-        self.size = size
+        self.out_shape = output_shape
         self.interpolation = interpolation
         self.align_corners = align_corners
 
@@ -60,14 +60,11 @@ class UpSampling2DCompatV1(tf.keras.layers.Layer):
             raise ValueError('Interpolation should be one of'
                              f'{interpolations}, got {self.interpolation}')
 
-        oldsize = input_shape[1:3]
-        self.newsize = [np.prod(s) for s in zip(self.size, oldsize)]
-
     def call(self, inputs: tf.Tensor, **kwargs) -> tf.Tensor:
 
         return tf.compat.v1.image.resize(
             inputs,
-            self.newsize,
+            self.out_shape,
             method=self.interpolation,
             align_corners=self.align_corners
         )
@@ -76,7 +73,7 @@ class UpSampling2DCompatV1(tf.keras.layers.Layer):
 
         config = super().get_config()
         config.update({
-            'size': self.size,
+            'output_shape': self.out_shape,
             'interpolation': self.interpolation,
             'align_corners': self.align_corners
         })
