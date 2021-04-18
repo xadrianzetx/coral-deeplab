@@ -112,11 +112,12 @@ def CoralDeepLabV3Plus(input_shape: tuple = (224, 224, 3),
     # in DepthwiseConv2D op suppot
     # https://coral.ai/docs/edgetpu/models-intro/#supported-operations
     dilation_rates = [3, 6, 9]
+    output_shape = input_shape[:-1]
     bn_eps = 1e-5
     name = 'CoralDeepLabV3Plus'
 
     aspp_out = deeplab_aspp_module(aspp_in, dilation_rates, bn_eps)
-    outputs = deeplab_decoder(aspp_out, encoder_maps, n_classes, bn_eps)
+    outputs = deeplab_decoder(aspp_out, encoder_maps, output_shape, n_classes, bn_eps)
     model = tf.keras.Model(inputs=encoder.inputs, outputs=outputs, name=name)
 
     return model
