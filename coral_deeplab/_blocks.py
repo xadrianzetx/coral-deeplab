@@ -100,20 +100,13 @@ def inverted_res_block(inputs: tf.Tensor, project_channels: int,
     return x
 
 
-def deeplab_aspp_module(inputs: tf.Tensor, dilation_rates: list,
-                        bn_epsilon: float) -> tf.Tensor:
+def deeplab_aspp_module(inputs: tf.Tensor, bn_epsilon: float) -> tf.Tensor:
     """Implements Atrous Spatial Pyramid Pooling module.
 
     Arguments
     ---------
     inputs : tf.Tensor
         Input tensor.
-
-    dilation_rates : list
-        List with 3 integers - dilation
-        rates used in ASPP branches 1-3.
-        Should be multiples of 3 according
-        to paper.
 
     bn_epsilon : float
         Epsilon used in batch normalization layer.
@@ -130,17 +123,6 @@ def deeplab_aspp_module(inputs: tf.Tensor, dilation_rates: list,
     b0 = BatchNormalization(epsilon=bn_epsilon, name='aspp0_bn')(b0)
     b0 = ReLU(name='aspp0_relu')(b0)
 
-    # branches 1-3
-    dilated_branches = []
-
-    for i, dilation in enumerate(dilation_rates):
-        lname = f'aspp{(i + 1) * 3}'
-        bx = SeparableConv2D(256, 3, padding='same', dilation_rate=dilation,
-                             use_bias=False, name=lname)(inputs)
-        bx = BatchNormalization(epsilon=bn_epsilon, name=f'{lname}_bn')(bx)
-        bx = ReLU(name=f'{lname}_relu')(bx)
-        dilated_branches.append(bx)
-
     # branch 4
     _, *size, _ = tf.keras.backend.int_shape(inputs)
     b4 = GlobalAveragePooling2D(name='aspp4_pooling')(inputs)
@@ -151,7 +133,7 @@ def deeplab_aspp_module(inputs: tf.Tensor, dilation_rates: list,
     b4 = ReLU(name='aspp4_relu')(b4)
 
     # concat and pointwise conv
-    x = Concatenate(name='aspp_concat')([b0, *dilated_branches, b4])
+    x = Concatenate(name='aspp_concat')([b0, b4])
     x = Conv2D(256, 1, padding='same', use_bias=False, name='aspp')(x)
     x = BatchNormalization(epsilon=bn_epsilon, name='aspp_bn')(x)
     outputs = ReLU(name='aspp_relu')(x)
