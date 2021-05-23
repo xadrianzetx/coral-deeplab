@@ -42,6 +42,7 @@ BN_MOMENTUM = 0.9997
 
 def inverted_res_block(inputs: tf.Tensor, project_channels: int,
                        expand_channels: int, block_num: int,
+                       strides: int = 1, dilation: int = 1,
                        skip: bool = False) -> tf.Tensor:
     """Modified MobileNetV2 inverted residual block.
 
@@ -87,7 +88,8 @@ def inverted_res_block(inputs: tf.Tensor, project_channels: int,
     x = ReLU(6, name=f'{block_num}_expand_relu')(x)
 
     # depthwise
-    x = DepthwiseConv2D(3, padding='same', dilation_rate=2, use_bias=False,
+    x = DepthwiseConv2D(3, strides=strides, padding='same',
+                        dilation_rate=dilation, use_bias=False,
                         depthwise_regularizer=tf.keras.regularizers.l2(L2),
                         name=f'{block_num}_depthwise')(x)
     x = BatchNormalization(momentum=BN_MOMENTUM,
