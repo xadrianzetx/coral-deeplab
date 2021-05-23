@@ -36,6 +36,10 @@ from tensorflow.keras.layers import (
 from coral_deeplab.layers import UpSampling2DCompatV1
 
 
+L2 = 4e-5
+BN_MOMENTUM = 0.9997
+
+
 def inverted_res_block(inputs: tf.Tensor, project_channels: int,
                        expand_channels: int, block_num: int,
                        skip: bool = False) -> tf.Tensor:
@@ -76,20 +80,26 @@ def inverted_res_block(inputs: tf.Tensor, project_channels: int,
 
     # expand
     x = Conv2D(expand_channels, 1, padding='same', use_bias=False,
+               kernel_regularizer=tf.keras.regularizers.l2(L2),
                name=f'{block_num}_expand')(inputs)
-    x = BatchNormalization(name=f'{block_num}_expand_bn')(x)
+    x = BatchNormalization(momentum=BN_MOMENTUM,
+                           name=f'{block_num}_expand_bn')(x)
     x = ReLU(6, name=f'{block_num}_expand_relu')(x)
 
     # depthwise
-    x = DepthwiseConv2D(3, padding='same', dilation_rate=2,
-                        use_bias=False, name=f'{block_num}_depthwise')(x)
-    x = BatchNormalization(name=f'{block_num}_depthwise_bn')(x)
+    x = DepthwiseConv2D(3, padding='same', dilation_rate=2, use_bias=False,
+                        depthwise_regularizer=tf.keras.regularizers.l2(L2),
+                        name=f'{block_num}_depthwise')(x)
+    x = BatchNormalization(momentum=BN_MOMENTUM,
+                           name=f'{block_num}_depthwise_bn')(x)
     x = ReLU(6, name=f'{block_num}_depthwise_relu')(x)
 
     # project
     x = Conv2D(project_channels, 1, padding='same', use_bias=False,
+               kernel_regularizer=tf.keras.regularizers.l2(L2),
                name=f'{block_num}_project')(x)
-    x = BatchNormalization(name=f'{block_num}_project_bn')(x)
+    x = BatchNormalization(momentum=BN_MOMENTUM,
+                           name=f'{block_num}_project_bn')(x)
 
     if skip:
         x = Add(name=f'{block_num}_add')([x, inputs])
