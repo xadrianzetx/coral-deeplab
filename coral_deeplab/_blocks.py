@@ -104,7 +104,7 @@ def inverted_res_block(inputs: tf.Tensor, project_channels: int,
                            name=f'expanded_conv_{block_num}/depthwise/BatchNorm')(x)
 
     if skip:
-        x = Add(name=f'{block_num}_add')([x, inputs])
+        x = Add(name=f'{block_num}_add')([inputs, x])
 
     return x
 
