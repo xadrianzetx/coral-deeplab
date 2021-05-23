@@ -82,26 +82,26 @@ def inverted_res_block(inputs: tf.Tensor, project_channels: int,
     # expand
     x = Conv2D(expand_channels, 1, padding='same', use_bias=False,
                kernel_regularizer=tf.keras.regularizers.l2(L2),
-               name=f'{block_num}_expand')(inputs)
+               name=f'expanded_conv_{block_num}/expand')(inputs)
     x = BatchNormalization(momentum=BN_MOMENTUM,
-                           name=f'{block_num}_expand_bn')(x)
-    x = ReLU(6, name=f'{block_num}_expand_relu')(x)
+                           name=f'expanded_conv_{block_num}/expand/BatchNorm')(x)
+    x = ReLU(6, name=f'expanded_conv_{block_num}/expand/relu')(x)
 
     # depthwise
     x = DepthwiseConv2D(3, strides=strides, padding='same',
                         dilation_rate=dilation, use_bias=False,
                         depthwise_regularizer=tf.keras.regularizers.l2(L2),
-                        name=f'{block_num}_depthwise')(x)
+                        name=f'expanded_conv_{block_num}/depthwise')(x)
     x = BatchNormalization(momentum=BN_MOMENTUM,
-                           name=f'{block_num}_depthwise_bn')(x)
-    x = ReLU(6, name=f'{block_num}_depthwise_relu')(x)
+                           name=f'expanded_conv_{block_num}/depthwise/BatchNorm')(x)
+    x = ReLU(6, name=f'expanded_conv_{block_num}/depthwise/relu')(x)
 
     # project
     x = Conv2D(project_channels, 1, padding='same', use_bias=False,
                kernel_regularizer=tf.keras.regularizers.l2(L2),
-               name=f'{block_num}_project')(x)
+               name=f'expanded_conv_{block_num}/depthwise')(x)
     x = BatchNormalization(momentum=BN_MOMENTUM,
-                           name=f'{block_num}_project_bn')(x)
+                           name=f'expanded_conv_{block_num}/depthwise/BatchNorm')(x)
 
     if skip:
         x = Add(name=f'{block_num}_add')([x, inputs])
