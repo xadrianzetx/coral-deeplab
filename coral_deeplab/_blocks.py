@@ -37,8 +37,8 @@ from coral_deeplab.layers import UpSampling2DCompatV1
 
 
 def inverted_res_block(inputs: tf.Tensor, project_channels: int,
-                       block_num: int, expand_channels: int = 960,
-                       expand: bool = False, skip: bool = False) -> tf.Tensor:
+                       expand_channels: int, block_num: int,
+                       skip: bool = False) -> tf.Tensor:
     """Modified MobileNetV2 inverted residual block.
 
     This implementation uses dilated convolution in its depthwise
@@ -74,28 +74,25 @@ def inverted_res_block(inputs: tf.Tensor, project_channels: int,
         Output tensor.
     """
 
-    block_name = f'block_{block_num}'
-    x = inputs
-
-    if expand:
-        x = Conv2D(expand_channels, 1, padding='same', use_bias=False,
-                   name=f'{block_name}_expand')(x)
-        x = BatchNormalization(name=f'{block_name}_expand_bn')(x)
-        x = ReLU(6, name=f'{block_name}_expand_relu')(x)
+    # expand
+    x = Conv2D(expand_channels, 1, padding='same', use_bias=False,
+               name=f'{block_num}_expand')(inputs)
+    x = BatchNormalization(name=f'{block_num}_expand_bn')(x)
+    x = ReLU(6, name=f'{block_num}_expand_relu')(x)
 
     # depthwise
     x = DepthwiseConv2D(3, padding='same', dilation_rate=2,
-                        use_bias=False, name=f'{block_name}_depthwise')(x)
-    x = BatchNormalization(name=f'{block_name}_depthwise_bn')(x)
-    x = ReLU(6, name=f'{block_name}_depthwise_relu')(x)
+                        use_bias=False, name=f'{block_num}_depthwise')(x)
+    x = BatchNormalization(name=f'{block_num}_depthwise_bn')(x)
+    x = ReLU(6, name=f'{block_num}_depthwise_relu')(x)
 
     # project
     x = Conv2D(project_channels, 1, padding='same', use_bias=False,
-               name=f'{block_name}_project')(x)
-    x = BatchNormalization(name=f'{block_name}_project_bn')(x)
+               name=f'{block_num}_project')(x)
+    x = BatchNormalization(name=f'{block_num}_project_bn')(x)
 
     if skip:
-        x = Add(name=f'{block_name}_add')([x, inputs])
+        x = Add(name=f'{block_num}_add')([x, inputs])
 
     return x
 
