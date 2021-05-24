@@ -26,7 +26,7 @@ from tensorflow.keras.layers import (
     SeparableConv2D,
     DepthwiseConv2D,
     BatchNormalization,
-    GlobalAveragePooling2D,
+    AveragePooling2D,
     Concatenate,
     Add,
     Lambda,
@@ -109,7 +109,7 @@ def inverted_res_block(inputs: tf.Tensor, project_channels: int,
     return x
 
 
-def deeplab_aspp_module(inputs: tf.Tensor, bn_epsilon: float) -> tf.Tensor:
+def deeplab_aspp_module(inputs: tf.Tensor) -> tf.Tensor:
     """Implements Atrous Spatial Pyramid Pooling module.
 
     Arguments
@@ -127,25 +127,30 @@ def deeplab_aspp_module(inputs: tf.Tensor, bn_epsilon: float) -> tf.Tensor:
     """
 
     # aspp branch 0
-    b0 = SeparableConv2D(256, 3, padding='same',
-                         use_bias=False, name='aspp0')(inputs)
-    b0 = BatchNormalization(epsilon=bn_epsilon, name='aspp0_bn')(b0)
-    b0 = ReLU(name='aspp0_relu')(b0)
+    b0 = Conv2D(256, 1, padding='same', use_bias=False,
+                kernel_regularizer=tf.keras.regularizers.L2(L2), name='aspp0')(inputs)
+    b0 = BatchNormalization(momentum=BN_MOMENTUM, name='aspp0/BatchNorm')(b0)
+    b0 = ReLU(name='aspp0/relu')(b0)
 
     # branch 4
     _, *size, _ = tf.keras.backend.int_shape(inputs)
-    b4 = GlobalAveragePooling2D(name='aspp4_pooling')(inputs)
-    b4 = Lambda(lambda t: t[:, tf.newaxis, tf.newaxis, :])(b4)
-    b4 = UpSampling2DCompatV1(output_shape=size, interpolation='bilinear')(b4)
-    b4 = Conv2D(256, 1, padding='same', use_bias=False, name='aspp4')(b4)
-    b4 = BatchNormalization(epsilon=bn_epsilon, name='aspp4_bn')(b4)
-    b4 = ReLU(name='aspp4_relu')(b4)
+    b4 = AveragePooling2D(pool_size=size, strides=(1, 1))(inputs)
+    b4 = Conv2D(256, 1, padding='same', use_bias=False,
+                kernel_regularizer=tf.keras.regularizers.L2(L2),
+                name='image_pooling')(b4)
+    b4 = BatchNormalization(momentum=BN_MOMENTUM,
+                            name='image_pooling/BatchNorm')(b4)
+    b4 = ReLU(name='image_pooling/relu')(b4)
+    b4 = Lambda(lambda t: tf.compat.v1.image.resize_bilinear(t, size=size, align_corners=True))(b4)
 
     # concat and pointwise conv
-    x = Concatenate(name='aspp_concat')([b0, b4])
-    x = Conv2D(256, 1, padding='same', use_bias=False, name='aspp')(x)
-    x = BatchNormalization(epsilon=bn_epsilon, name='aspp_bn')(x)
-    outputs = ReLU(name='aspp_relu')(x)
+    x = Concatenate(name='aspp_concat')([b4, b0])
+    x = Conv2D(256, 1, padding='same', use_bias=False,
+               kernel_regularizer=tf.keras.regularizers.L2(L2),
+               name='concat_projection')(x)
+    x = BatchNormalization(momentum=BN_MOMENTUM,
+                           name='image_pooling/BatchNorm')(x)
+    outputs = ReLU(name='concat_projection/relu')(x)
 
     return outputs
 
