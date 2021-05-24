@@ -59,16 +59,19 @@ def inverted_res_block(inputs: tf.Tensor, project_channels: int,
         Number of feature maps to produce
         in project layer.
 
+    expand_channels : int
+        Number of feature maps to produce
+        in expand layer.
+
     block_num : int
         Residual block number
         (used for layer naming).
 
-    expand_channels : int, default=960
-        Number of feature maps to produce
-        in expand layer (if used).
+    strides : int
+        Depthwise convolution striding.
 
-    expand : bool, default=False
-        If true, expand layer is used in block.
+    dilation : int
+        Depthwise convolution dilation.
 
     skip : bool, default=False
         If true, skip connection is used in block.
@@ -116,9 +119,6 @@ def deeplab_aspp_module(inputs: tf.Tensor) -> tf.Tensor:
     ---------
     inputs : tf.Tensor
         Input tensor.
-
-    bn_epsilon : float
-        Epsilon used in batch normalization layer.
 
     Returns
     -------
