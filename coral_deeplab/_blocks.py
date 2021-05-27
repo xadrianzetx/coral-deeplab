@@ -155,6 +155,21 @@ def deeplab_aspp_module(inputs: tf.Tensor) -> tf.Tensor:
     return outputs
 
 
+def deeplabv3_decoder(inputs: tf.Tensor, output_shape: tuple,
+                      n_classes: int) -> tf.Tensor:
+    """
+    """
+
+    x = Conv2D(n_classes, 1, padding='same',
+               kernel_regularizer=tf.keras.regularizers.L2(L2),
+               name='logits/semantic')(inputs)
+    outputs = Lambda(
+        lambda t: tf.compat.v1.image.resize_bilinear(
+            t, output_shape, align_corners=True))(x)
+
+    return outputs
+
+
 def deeplab_decoder(inputs: tf.Tensor, skip_con: tf.Tensor,
                     output_shape: tuple, n_classes: int,
                     bn_epsilon: float) -> tf.Tensor:
