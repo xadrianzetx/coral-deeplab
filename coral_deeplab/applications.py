@@ -24,11 +24,13 @@ __all__ = ['CoralDeepLabV3']
 
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras.layers import Input
 
+
+from coral_deeplab._encoders import mobilenetv2
 from coral_deeplab._blocks import (
-    inverted_res_block,
     deeplab_aspp_module,
-    deeplab_decoder
+    deeplabv3_decoder
 )
 
 
@@ -90,33 +92,11 @@ def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
     if input_shape[0] != input_shape[1]:
         raise ValueError('Non square inputs not supported.')
 
-    supported_shapes = [96, 128, 160, 192, 224]
-    if input_shape[0] not in supported_shapes:
-        raise ValueError(f'Image shape not in {supported_shapes}')
-
-    encoder = tf.keras.applications.MobileNetV2(
-        input_shape=input_shape,
-        include_top=False,
-        weights=None
-    )
-
-    encoder_maps = encoder.get_layer('block_3_expand_relu').output
-    encoder_last = encoder.get_layer('block_13_expand_relu').output
-
-    x = inverted_res_block(encoder_last, 160, expand_channels=576, block_num=13)
-    x = inverted_res_block(x, 160, expand=True, skip=True, block_num=14)
-    x = inverted_res_block(x, 160, expand=True, skip=True, block_num=15)
-    aspp_in = inverted_res_block(x, 320, expand=True, block_num=16)
-
-    # dilation rates are halved due to some unknown limitation
-    # in DepthwiseConv2D op suppot
-    # https://coral.ai/docs/edgetpu/models-intro/#supported-operations
-    output_shape = input_shape[:-1]
-    bn_eps = 1e-5
-    name = 'CoralDeepLabV3Plus'
-
-    aspp_out = deeplab_aspp_module(aspp_in, bn_eps)
-    outputs = deeplab_decoder(aspp_out, encoder_maps, output_shape, n_classes, bn_eps)
-    model = tf.keras.Model(inputs=encoder.inputs, outputs=outputs, name=name)
+    inputs = Input(shape=input_shape)
+    aspp_in = mobilenetv2(inputs)
+    aspp_out = deeplab_aspp_module(aspp_in)
+    outputs = deeplabv3_decoder(aspp_out, input_shape[:2], n_classes)
+    name = 'CoralDeeplabV3'
+    model = tf.keras.Model(inputs=inputs, outputs=outputs, name=name)
 
     return model
