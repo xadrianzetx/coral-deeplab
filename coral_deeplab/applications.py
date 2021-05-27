@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = ['CoralDeepLabV3Plus']
+__all__ = ['CoralDeepLabV3']
 
 import numpy as np
 import tensorflow as tf
@@ -32,8 +32,8 @@ from coral_deeplab._blocks import (
 )
 
 
-def CoralDeepLabV3Plus(input_shape: tuple = (224, 224, 3),
-                       n_classes: int = 30, **kwargs) -> tf.keras.Model:
+def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
+                   n_classes: int = 30, **kwargs) -> tf.keras.Model:
     """DeepLab v3 Plus implementation fully compilable to coral.ai Edge TPU.
 
     Implementation follows original paper as close as possible, while still
