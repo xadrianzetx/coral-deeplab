@@ -36,20 +36,18 @@ from coral_deeplab._blocks import (
 
 def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
                    n_classes: int = 30, **kwargs) -> tf.keras.Model:
-    """DeepLab v3 Plus implementation fully compilable to coral.ai Edge TPU.
+    """DeepLab v3 implementation compilable to coral.ai Edge TPU.
 
-    Implementation follows original paper as close as possible, while still
-    being compatible with Edge TPU. Due to hardware limitations, max input
-    shape has been decreases to 224x224x3, output stride is set at 16 and
-    dilation rates in Atrous Spatial Pyramid Pooling branches are
-    3, 6, 9 instead of original 6, 12, 18. All 5 branches of ASPP are used.
+    Implementation follows original paper as close as possible, and
+    compiles to TPU up to decoder conv layer providing significant
+    speedup over CPU inference time.
 
-    MobileNetV2 is used as encoder, but last 4 blocks had been modified
+    MobileNetV2 is used as encoder, but last 3 blocks had been modified
     to use atrous convolution in order to preserve spatial resolution.
 
     Arguments
     ---------
-    input_shape : tuple, default=(224, 224, 3)
+    input_shape : tuple, default=(513, 513, 3)
         Input tensor shape.
 
     n_classes : int, default=30
@@ -60,28 +58,23 @@ def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
     Returns
     -------
     model : tf.keras.Model
-        DeepLabV3Plus keras model instance.
+        DeepLabV3 keras model instance.
 
     References
     ----------
-    - [1] https://arxiv.org/pdf/1802.02611.pdf
+    - [1] https://arxiv.org/pdf/1706.05587.pdf
     - [2] https://coral.ai/products/
 
     Notes
     -----
     There is no last activation layer. Model outputs logits.
-    Default setup with input shape 224x224x3 and 30 output
-    classes runs pretty close to compilable maximum. Setting
-    grater input shape will result in error, and setting greater
-    number of output classes might result in model not fully mapping
-    to Edge TPU.
 
     Examples
     --------
     >>> import coral_deeplab as cdl
-    >>> model = cdl.applications.CoralDeepLabV3Plus()
+    >>> model = cdl.applications.CoralDeepLabV3()
     >>> print(model.name)
-    'CoralDeepLabV3Plus'
+    'CoralDeepLabV3'
     """
 
     if np.argmin(input_shape) == 0:
