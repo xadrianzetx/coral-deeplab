@@ -36,7 +36,21 @@ from coral_deeplab._blocks import (
 
 
 def mobilenetv2(inputs: tf.Tensor) -> tf.Tensor:
-    """
+    """Implements modified version of MobileNetV2.
+
+    Last three inverted res block use dilated conv
+    in depthwise convolution layers to preserve spatial
+    resolution of the feature maps.
+
+    Arguments
+    ---------
+    inputs : tf.Tensor
+        Input tensor.
+
+    Returns
+    -------
+    outputs : tf.Tensor
+        Output tensor.
     """
 
     x = Conv2D(32, 3, 2, padding='same', use_bias=False,
