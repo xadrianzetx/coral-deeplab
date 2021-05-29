@@ -72,12 +72,12 @@ def mobilenetv2(inputs: tf.Tensor) -> tf.Tensor:
     x = BatchNormalization(momentum=BN_MOMENTUM,
                            name='expanded_conv/project/BatchNorm')(x)
 
-    x = inverted_res_block(x, 24, expand_channels=96, stride=2, block_num=1)
+    x = inverted_res_block(x, 24, expand_channels=96, strides=2, block_num=1)
     x = inverted_res_block(x, 24, expand_channels=144, skip=True, block_num=2)
-    x = inverted_res_block(x, 32, expand_channels=144, stride=2, block_num=3)
+    x = inverted_res_block(x, 32, expand_channels=144, strides=2, block_num=3)
     x = inverted_res_block(x, 32, expand_channels=192, skip=True, block_num=4)
     x = inverted_res_block(x, 32, expand_channels=192, skip=True, block_num=5)
-    x = inverted_res_block(x, 64, expand_channels=192, stride=2, block_num=6)
+    x = inverted_res_block(x, 64, expand_channels=192, strides=2, block_num=6)
     x = inverted_res_block(x, 64, expand_channels=384, skip=True, block_num=7)
     x = inverted_res_block(x, 64, expand_channels=384, skip=True, block_num=8)
     x = inverted_res_block(x, 64, expand_channels=384, skip=True, block_num=9)
