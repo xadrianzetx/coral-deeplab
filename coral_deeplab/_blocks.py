@@ -26,7 +26,7 @@ from tensorflow.keras.layers import (
     SeparableConv2D,
     DepthwiseConv2D,
     BatchNormalization,
-    GlobalAveragePooling2D,
+    AveragePooling2D,
     Concatenate,
     Add,
     Lambda,
@@ -36,9 +36,14 @@ from tensorflow.keras.layers import (
 from coral_deeplab.layers import UpSampling2DCompatV1
 
 
+L2 = 4e-5
+BN_MOMENTUM = 0.9997
+
+
 def inverted_res_block(inputs: tf.Tensor, project_channels: int,
-                       block_num: int, expand_channels: int = 960,
-                       expand: bool = False, skip: bool = False) -> tf.Tensor:
+                       expand_channels: int, block_num: int,
+                       strides: int = 1, dilation: int = 1,
+                       skip: bool = False) -> tf.Tensor:
     """Modified MobileNetV2 inverted residual block.
 
     This implementation uses dilated convolution in its depthwise
@@ -54,16 +59,19 @@ def inverted_res_block(inputs: tf.Tensor, project_channels: int,
         Number of feature maps to produce
         in project layer.
 
+    expand_channels : int
+        Number of feature maps to produce
+        in expand layer.
+
     block_num : int
         Residual block number
         (used for layer naming).
 
-    expand_channels : int, default=960
-        Number of feature maps to produce
-        in expand layer (if used).
+    strides : int
+        Depthwise convolution striding.
 
-    expand : bool, default=False
-        If true, expand layer is used in block.
+    dilation : int
+        Depthwise convolution dilation.
 
     skip : bool, default=False
         If true, skip connection is used in block.
@@ -74,42 +82,43 @@ def inverted_res_block(inputs: tf.Tensor, project_channels: int,
         Output tensor.
     """
 
-    block_name = f'block_{block_num}'
-    x = inputs
-
-    if expand:
-        x = Conv2D(expand_channels, 1, padding='same', use_bias=False,
-                   name=f'{block_name}_expand')(x)
-        x = BatchNormalization(name=f'{block_name}_expand_bn')(x)
-        x = ReLU(6, name=f'{block_name}_expand_relu')(x)
+    # expand
+    x = Conv2D(expand_channels, 1, padding='same', use_bias=False,
+               kernel_regularizer=tf.keras.regularizers.l2(L2),
+               name=f'expanded_conv_{block_num}/expand')(inputs)
+    x = BatchNormalization(momentum=BN_MOMENTUM,
+                           name=f'expanded_conv_{block_num}/expand/BatchNorm')(x)
+    x = ReLU(6, name=f'expanded_conv_{block_num}/expand/relu')(x)
 
     # depthwise
-    x = DepthwiseConv2D(3, padding='same', dilation_rate=2,
-                        use_bias=False, name=f'{block_name}_depthwise')(x)
-    x = BatchNormalization(name=f'{block_name}_depthwise_bn')(x)
-    x = ReLU(6, name=f'{block_name}_depthwise_relu')(x)
+    x = DepthwiseConv2D(3, strides=strides, padding='same',
+                        dilation_rate=dilation, use_bias=False,
+                        depthwise_regularizer=tf.keras.regularizers.l2(L2),
+                        name=f'expanded_conv_{block_num}/depthwise')(x)
+    x = BatchNormalization(momentum=BN_MOMENTUM,
+                           name=f'expanded_conv_{block_num}/depthwise/BatchNorm')(x)
+    x = ReLU(6, name=f'expanded_conv_{block_num}/depthwise/relu')(x)
 
     # project
     x = Conv2D(project_channels, 1, padding='same', use_bias=False,
-               name=f'{block_name}_project')(x)
-    x = BatchNormalization(name=f'{block_name}_project_bn')(x)
+               kernel_regularizer=tf.keras.regularizers.l2(L2),
+               name=f'expanded_conv_{block_num}/project')(x)
+    x = BatchNormalization(momentum=BN_MOMENTUM,
+                           name=f'expanded_conv_{block_num}/project/BatchNorm')(x)
 
     if skip:
-        x = Add(name=f'{block_name}_add')([x, inputs])
+        x = Add(name=f'{block_num}_add')([inputs, x])
 
     return x
 
 
-def deeplab_aspp_module(inputs: tf.Tensor, bn_epsilon: float) -> tf.Tensor:
+def deeplab_aspp_module(inputs: tf.Tensor) -> tf.Tensor:
     """Implements Atrous Spatial Pyramid Pooling module.
 
     Arguments
     ---------
     inputs : tf.Tensor
         Input tensor.
-
-    bn_epsilon : float
-        Epsilon used in batch normalization layer.
 
     Returns
     -------
@@ -118,25 +127,63 @@ def deeplab_aspp_module(inputs: tf.Tensor, bn_epsilon: float) -> tf.Tensor:
     """
 
     # aspp branch 0
-    b0 = SeparableConv2D(256, 3, padding='same',
-                         use_bias=False, name='aspp0')(inputs)
-    b0 = BatchNormalization(epsilon=bn_epsilon, name='aspp0_bn')(b0)
-    b0 = ReLU(name='aspp0_relu')(b0)
+    b0 = Conv2D(256, 1, padding='same', use_bias=False,
+                kernel_regularizer=tf.keras.regularizers.L2(L2), name='aspp0')(inputs)
+    b0 = BatchNormalization(momentum=BN_MOMENTUM, name='aspp0/BatchNorm')(b0)
+    b0 = ReLU(name='aspp0/relu')(b0)
 
     # branch 4
     _, *size, _ = tf.keras.backend.int_shape(inputs)
-    b4 = GlobalAveragePooling2D(name='aspp4_pooling')(inputs)
-    b4 = Lambda(lambda t: t[:, tf.newaxis, tf.newaxis, :])(b4)
-    b4 = UpSampling2DCompatV1(output_shape=size, interpolation='bilinear')(b4)
-    b4 = Conv2D(256, 1, padding='same', use_bias=False, name='aspp4')(b4)
-    b4 = BatchNormalization(epsilon=bn_epsilon, name='aspp4_bn')(b4)
-    b4 = ReLU(name='aspp4_relu')(b4)
+    b4 = AveragePooling2D(pool_size=size, strides=(1, 1))(inputs)
+    b4 = Conv2D(256, 1, padding='same', use_bias=False,
+                kernel_regularizer=tf.keras.regularizers.L2(L2),
+                name='image_pooling')(b4)
+    b4 = BatchNormalization(momentum=BN_MOMENTUM,
+                            name='image_pooling/BatchNorm')(b4)
+    b4 = ReLU(name='image_pooling/relu')(b4)
+    b4 = Lambda(lambda t: tf.compat.v1.image.resize_bilinear(t, size=size, align_corners=True))(b4)
 
     # concat and pointwise conv
-    x = Concatenate(name='aspp_concat')([b0, b4])
-    x = Conv2D(256, 1, padding='same', use_bias=False, name='aspp')(x)
-    x = BatchNormalization(epsilon=bn_epsilon, name='aspp_bn')(x)
-    outputs = ReLU(name='aspp_relu')(x)
+    x = Concatenate(name='aspp_concat')([b4, b0])
+    x = Conv2D(256, 1, padding='same', use_bias=False,
+               kernel_regularizer=tf.keras.regularizers.L2(L2),
+               name='concat_projection')(x)
+    x = BatchNormalization(momentum=BN_MOMENTUM,
+                           name='concat_projection/BatchNorm')(x)
+    outputs = ReLU(name='concat_projection/relu')(x)
+
+    return outputs
+
+
+def deeplabv3_decoder(inputs: tf.Tensor, output_shape: tuple,
+                      n_classes: int) -> tf.Tensor:
+    """Implements DeepLabV3 decoder module.
+
+    Arguments
+    ---------
+    inputs : tf.Tensor
+        Input tensor.
+
+    output_shape : tuple
+        Tuple with integers specifying HxW
+        shape of logits.
+
+    n_classes : int
+        Number of segmentation classes to output
+        from the decoder.
+
+    Returns
+    -------
+    outputs : tf.Tensor
+        Output tensor.
+    """
+
+    x = Conv2D(n_classes, 1, padding='same',
+               kernel_regularizer=tf.keras.regularizers.L2(L2),
+               name='logits/semantic')(inputs)
+    outputs = Lambda(
+        lambda t: tf.compat.v1.image.resize_bilinear(
+            t, output_shape, align_corners=True))(x)
 
     return outputs
 
