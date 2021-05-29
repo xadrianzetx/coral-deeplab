@@ -4,6 +4,7 @@ import sys
 import uuid
 import unittest
 import subprocess
+
 import numpy as np
 import tensorflow as tf
 
@@ -52,29 +53,22 @@ class TestCoralDeepLabV3Plus(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             input_shape = (3, 224, 224)
-            cdl.applications.CoralDeepLabV3Plus(input_shape)
+            cdl.applications.CoralDeepLabV3(input_shape)
 
     def test_input_not_square(self):
         """Test if exception is rised when input not square"""
 
         with self.assertRaises(ValueError):
             input_shape = (112, 224, 3)
-            cdl.applications.CoralDeepLabV3Plus(input_shape)
-
-    def test_input_too_big(self):
-        """Test if exception when input size is over max"""
-
-        with self.assertRaises(ValueError):
-            input_shape = (512, 512, 3)
-            cdl.applications.CoralDeepLabV3Plus(input_shape)
+            cdl.applications.CoralDeepLabV3(input_shape)
 
     def test_input_match_output(self):
         """Test if output shape matches input"""
 
-        supported_shapes = [96, 128, 160, 192, 224]
+        supported_shapes = [192, 224, 513]
         for shape in supported_shapes:
             input_shape = (shape, shape, 3)
-            model = cdl.applications.CoralDeepLabV3Plus(input_shape)
+            model = cdl.applications.CoralDeepLabV3(input_shape)
             _, *out_shape, _ = model.output_shape
             self.assertEqual(tuple(out_shape), input_shape[:-1])
 
@@ -82,10 +76,10 @@ class TestCoralDeepLabV3Plus(unittest.TestCase):
     def test_edgetpu_compiles(self):
         """Test if model compiles to Edge TPU across input ranges"""
 
-        supported_shapes = [96, 128, 160, 192, 224]
+        supported_shapes = [192, 224, 513]
         for shape in supported_shapes:
             input_shape = (shape, shape, 3)
-            model = cdl.applications.CoralDeepLabV3Plus(input_shape)
+            model = cdl.applications.CoralDeepLabV3(input_shape)
             datagen = fake_dataset_generator(input_shape, 10)
             stdout = quantize_and_compile(model, datagen)
             compiled = re.findall('Model compiled successfully', stdout)
