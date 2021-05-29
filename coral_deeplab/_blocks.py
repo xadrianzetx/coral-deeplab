@@ -102,9 +102,9 @@ def inverted_res_block(inputs: tf.Tensor, project_channels: int,
     # project
     x = Conv2D(project_channels, 1, padding='same', use_bias=False,
                kernel_regularizer=tf.keras.regularizers.l2(L2),
-               name=f'expanded_conv_{block_num}/depthwise')(x)
+               name=f'expanded_conv_{block_num}/project')(x)
     x = BatchNormalization(momentum=BN_MOMENTUM,
-                           name=f'expanded_conv_{block_num}/depthwise/BatchNorm')(x)
+                           name=f'expanded_conv_{block_num}/project/BatchNorm')(x)
 
     if skip:
         x = Add(name=f'{block_num}_add')([inputs, x])
@@ -149,7 +149,7 @@ def deeplab_aspp_module(inputs: tf.Tensor) -> tf.Tensor:
                kernel_regularizer=tf.keras.regularizers.L2(L2),
                name='concat_projection')(x)
     x = BatchNormalization(momentum=BN_MOMENTUM,
-                           name='image_pooling/BatchNorm')(x)
+                           name='concat_projection/BatchNorm')(x)
     outputs = ReLU(name='concat_projection/relu')(x)
 
     return outputs
