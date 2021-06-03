@@ -62,16 +62,6 @@ class TestCoralDeepLabV3Plus(unittest.TestCase):
             input_shape = (112, 224, 3)
             cdl.applications.CoralDeepLabV3(input_shape)
 
-    def test_input_match_output(self):
-        """Test if output shape matches input"""
-
-        supported_shapes = [192, 224, 513]
-        for shape in supported_shapes:
-            input_shape = (shape, shape, 3)
-            model = cdl.applications.CoralDeepLabV3(input_shape)
-            _, *out_shape, _ = model.output_shape
-            self.assertEqual(tuple(out_shape), input_shape[:-1])
-
     @unittest.skipUnless(sys.platform.startswith('linux'), 'linux required')
     def test_edgetpu_compiles(self):
         """Test if model compiles to Edge TPU across input ranges"""
