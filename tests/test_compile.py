@@ -38,7 +38,7 @@ def quantize_and_compile(model, dataset):
     open(model_path, 'wb').write(quantized)
 
     # compile
-    cmd = ['edgetpu_compiler', '-s', model_path]
+    cmd = ['edgetpu_compiler', '-a', '-s', model_path]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     p.wait()
     stdout = p.stdout.read()
@@ -61,16 +61,6 @@ class TestCoralDeepLabV3Plus(unittest.TestCase):
         with self.assertRaises(ValueError):
             input_shape = (112, 224, 3)
             cdl.applications.CoralDeepLabV3(input_shape)
-
-    def test_input_match_output(self):
-        """Test if output shape matches input"""
-
-        supported_shapes = [192, 224, 513]
-        for shape in supported_shapes:
-            input_shape = (shape, shape, 3)
-            model = cdl.applications.CoralDeepLabV3(input_shape)
-            _, *out_shape, _ = model.output_shape
-            self.assertEqual(tuple(out_shape), input_shape[:-1])
 
     @unittest.skipUnless(sys.platform.startswith('linux'), 'linux required')
     def test_edgetpu_compiles(self):
