@@ -68,6 +68,8 @@ def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
     Notes
     -----
     There is no last activation layer. Model outputs logits.
+    Last layer in the decoder (bilinear upsampling) has been
+    removed for performance reasons, making this model OS16.
 
     Examples
     --------
@@ -88,7 +90,7 @@ def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
     inputs = Input(shape=input_shape)
     aspp_in = mobilenetv2(inputs)
     aspp_out = deeplab_aspp_module(aspp_in)
-    outputs = deeplabv3_decoder(aspp_out, input_shape[:2], n_classes)
+    outputs = deeplabv3_decoder(aspp_out, n_classes)
     name = 'CoralDeeplabV3'
     model = tf.keras.Model(inputs=inputs, outputs=outputs, name=name)
 

@@ -155,18 +155,13 @@ def deeplab_aspp_module(inputs: tf.Tensor) -> tf.Tensor:
     return outputs
 
 
-def deeplabv3_decoder(inputs: tf.Tensor, output_shape: tuple,
-                      n_classes: int) -> tf.Tensor:
+def deeplabv3_decoder(inputs: tf.Tensor, n_classes: int) -> tf.Tensor:
     """Implements DeepLabV3 decoder module.
 
     Arguments
     ---------
     inputs : tf.Tensor
         Input tensor.
-
-    output_shape : tuple
-        Tuple with integers specifying HxW
-        shape of logits.
 
     n_classes : int
         Number of segmentation classes to output
@@ -178,12 +173,9 @@ def deeplabv3_decoder(inputs: tf.Tensor, output_shape: tuple,
         Output tensor.
     """
 
-    x = Conv2D(n_classes, 1, padding='same',
-               kernel_regularizer=tf.keras.regularizers.L2(L2),
-               name='logits/semantic')(inputs)
-    outputs = Lambda(
-        lambda t: tf.compat.v1.image.resize_bilinear(
-            t, output_shape, align_corners=True))(x)
+    outputs = Conv2D(n_classes, 1, padding='same',
+                     kernel_regularizer=tf.keras.regularizers.L2(L2),
+                     name='logits/semantic')(inputs)
 
     return outputs
 
