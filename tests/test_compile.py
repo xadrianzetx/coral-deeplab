@@ -38,7 +38,7 @@ def quantize_and_compile(model, dataset):
     open(model_path, 'wb').write(quantized)
 
     # compile
-    cmd = ['edgetpu_compiler', '-s', model_path]
+    cmd = ['edgetpu_compiler', '-a', '-s', model_path]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     p.wait()
     stdout = p.stdout.read()
