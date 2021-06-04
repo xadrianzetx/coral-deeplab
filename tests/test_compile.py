@@ -46,7 +46,7 @@ def quantize_and_compile(model, dataset):
     return stdout.decode()
 
 
-class TestCoralDeepLabV3Plus(unittest.TestCase):
+class TestCoralDeepLabV3(unittest.TestCase):
 
     def test_channel_first(self):
         """Test if exception is rised when channel-first used"""
@@ -61,6 +61,15 @@ class TestCoralDeepLabV3Plus(unittest.TestCase):
         with self.assertRaises(ValueError):
             input_shape = (112, 224, 3)
             cdl.applications.CoralDeepLabV3(input_shape)
+
+    def test_dm1_voc_weights_load(self):
+        """Test if pre-trained dm1 voc weights load."""
+
+        try:
+            cdl.applications.CoralDeepLabV3(weights='pascal_voc')
+
+        except Exception as e:
+            self.fail(str(e))
 
     @unittest.skipUnless(sys.platform.startswith('linux'), 'linux required')
     def test_edgetpu_compiles(self):
@@ -77,6 +86,18 @@ class TestCoralDeepLabV3Plus(unittest.TestCase):
             if not compiled:
                 msg = f'Model not compiled for shape {input_shape}'
                 self.fail(msg)
+
+    @unittest.skipUnless(sys.platform.startswith('linux'), 'linux required')
+    def test_pretrained_edgetpu_compile(self):
+        """Test if model compiles from pretrained weights"""
+
+        model = cdl.applications.CoralDeepLabV3(weights='pascal_voc')
+        datagen = fake_dataset_generator((513, 513, 3), 10)
+        stdout = quantize_and_compile(model, datagen)
+        compiled = re.findall('Model compiled successfully', stdout)
+
+        if not compiled:
+            self.fail('Pretrained model not compiled')
 
 
 if __name__ == '__main__':
