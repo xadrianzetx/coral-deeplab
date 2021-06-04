@@ -22,11 +22,14 @@
 
 __all__ = ['CoralDeepLabV3']
 
+from typing import Optional
+
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import Input
 
-
+from coral_deeplab import pretrained
+from coral_deeplab._downloads import download_and_checksum_mlmodel
 from coral_deeplab._encoders import mobilenetv2
 from coral_deeplab._blocks import (
     deeplab_aspp_module,
@@ -35,6 +38,7 @@ from coral_deeplab._blocks import (
 
 
 def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
+                   weights: Optional[str] = None,
                    n_classes: int = 30, **kwargs) -> tf.keras.Model:
     """DeepLab v3 implementation compilable to coral.ai Edge TPU.
 
@@ -49,6 +53,10 @@ def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
     ---------
     input_shape : tuple, default=(513, 513, 3)
         Input tensor shape.
+
+    weights : str, default=None
+        One of None (random initialization) or `pascal_voc`
+        (pre-training on Pascal VOC trainaug set).
 
     n_classes : int, default=30
         Number of segmentation classes.
@@ -78,6 +86,13 @@ def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
     >>> print(model.name)
     'CoralDeepLabV3'
     """
+
+    if weights == 'pascal_voc':
+        model_type = pretrained.DeepLabV3PascalDM1.TF_MODEL
+        model_path = download_and_checksum_mlmodel(model_type)
+        model = tf.keras.models.load_model(
+            model_path, custom_objects={'tf': tf}, compile=False)
+        return model
 
     if np.argmin(input_shape) == 0:
         # assuming channels always
