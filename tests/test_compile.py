@@ -69,7 +69,7 @@ class TestCoralDeepLabV3(unittest.TestCase):
             cdl.applications.CoralDeepLabV3(weights='pascal_voc')
 
         except Exception as e:
-            self.fail(e)
+            self.fail(str(e))
 
     @unittest.skipUnless(sys.platform.startswith('linux'), 'linux required')
     def test_edgetpu_compiles(self):
