@@ -89,7 +89,7 @@ class TestCoralDeepLabV3(unittest.TestCase):
 
     @unittest.skipUnless(sys.platform.startswith('linux'), 'linux required')
     def test_pretrained_edgetpu_compile(self):
-        """foo"""
+        """Test if model compiles from pretrained weights"""
 
         model = cdl.applications.CoralDeepLabV3(weights='pascal_voc')
         datagen = fake_dataset_generator((513, 513, 3), 10)
