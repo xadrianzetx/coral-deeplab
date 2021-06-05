@@ -27,13 +27,16 @@ class MLModel(Enum):
     pass
 
 
-class DeepLabV3PascalDM1(MLModel):
-    TF_MODEL = {
+class KerasModel(MLModel):
+    DEEPLAB_V3_DM1 = {
         'origin': '1CE7cMfgViNgFxXKbCq0wFXeO8slV0Z01',
         'filename': 'deeplabv3_mnv2_dm1_voc_tainaug_os16.h5',
         'checksum': 'b326724d7e89d8cc7f409edbf1b11105'
     }
-    EDGETPU = {
+
+
+class EdgeTPUModel(MLModel):
+    DEEPLAB_V3_DM1 = {
         'origin': '1YmaaQ9qOxlMfB9eAI7roOqgeo4y7Mosg',
         'filename': 'deeplabv3_mnv2_dm1_voc_tainaug_os16_edgetpu.tflite',
         'checksum': '6c0ade5b647dc137f6231a9724cf65e6'
