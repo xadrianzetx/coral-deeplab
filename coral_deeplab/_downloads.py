@@ -41,9 +41,9 @@ def download_and_checksum_mlmodel(model: MLModel,
         One of `MLModel` options
         available in `cdl.pretrained` module.
 
-    dst : str
+    dst : str, default = None
         Model destination path. Saves to
-        current dir if not specified
+        library dir if not specified
 
     Returns
     -------
