@@ -5,3 +5,6 @@ from . import (
     applications,
     pretrained
 )
+
+
+from ._downloads import from_precompiled

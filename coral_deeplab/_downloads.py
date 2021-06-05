@@ -25,7 +25,7 @@ import hashlib
 import requests
 from typing import Optional
 
-from coral_deeplab.pretrained import MLModel
+from coral_deeplab.pretrained import MLModel, EdgeTPUModel
 
 
 GOOGLE_DRIVE_EXPORT_URL = 'https://docs.google.com/uc?export=download'
@@ -76,3 +76,30 @@ def download_and_checksum_mlmodel(model: MLModel,
         raise Warning(f'md5sum failed for {filename} and file was deleted.')
 
     return filepath
+
+
+def from_precompiled(model: EdgeTPUModel, dest: Optional[str] = None) -> str:
+    """Returns path to precompiled edgetpu model.
+
+    Arguments
+    ---------
+    model : EdgeTPUModel
+        One of `EdgeTPUModel` options
+        available in `cdl.pretrained` module.
+
+    dest : str, default = None
+        Model destination path. Saves to
+        library dir if not specified
+
+    Returns
+    -------
+    model : str
+        Path to downloaded model.
+    """
+
+    if not isinstance(model, EdgeTPUModel):
+        raise ValueError('Incorrect model type specified. '
+                         'Use one of cdl.pretrained.EdgeTPUModel')
+
+    model = download_and_checksum_mlmodel(model, dest)
+    return model
