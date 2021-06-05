@@ -23,7 +23,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Topic :: Scientific/Engineering :: Artificial Intelligence'
     ],
-    python_requires='==3.7',
+    python_requires='==3.7.*',
     install_requires=[
         'numpy>=1.19.5',
         'tensorflow-gpu==2.4.0'
