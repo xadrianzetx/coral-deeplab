@@ -9,9 +9,7 @@ Thanks to pretrained weights and `tf.keras` implementation it's easy to fine tun
 ## Instalation
 
 ```bash
-git clone https://github.com/xadrianzetx/coral-deeplab.git
-cd coral-deeplab
-python setup.py install
+pip install git+https://github.com/xadrianzetx/coral-deeplab.git
 ```
 
 ## Usage
@@ -38,11 +36,29 @@ isinstance(model, tf.keras.Model)
 # True
 ```
 
-...or just pull pre-compiled Edge TPU models straight to interpreter.
+...or just pull pre-compiled Edge TPU models straight to interpreter (can use `--no-deps` for lightweight install).
 
 ```python
-# TBA :^)
+import coral_deeplab as cdl
+import tflite_runtime.interpreter as tflite
+
+interpreter = tflite.Interpreter(
+    cdl.from_precompiled(cdl.pretrained.EdgeTPUModel.DEEPLAB_V3_DM1),
+    experimental_delegates=[tflite.load_delegate('libedgetpu.so.1)]
+)
 ```
+
+## Latency
+
+|Model|Backbone|Depth mul.|ARM Cortex-A53 (RPi3B+)|ARM Cortex-A72 (RPi4)|
+|---|:---:|:---:|:---:|:---:|
+|[DeepLab v3 (google)](https://coral.ai/models/semantic-segmentation/)|MobileNet v2|1.0|*TBA*|~147.5 ms/iter (~6.8 FPS)|
+|DeepLab v3 (this)|MobileNet v2|1.0|*TBA*|~43.7 ms/iter (~22.9 FPS)|
+|DeepLab v3 (this)|MobileNet v2|0.5|*TBA*|*TBA*|
+
+## Results
+
+TODO
 
 ## References
 
