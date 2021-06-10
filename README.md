@@ -60,7 +60,11 @@ All models have been tested with 513x513 input on fresh install of `Raspbian GNU
 
 ## Results
 
-TODO
+From left: original image, DeepLab v3 (google), DeepLab v3 (this). All segmentation masks were produced with Edge TPU.
+
+<p align="center">
+<image src="https://drive.google.com/uc?id=1fRJWmODwjHUgdKwCPvM8H4ZEpvzGuxlQ"></image>
+</p>
 
 ## References
 
