@@ -88,7 +88,7 @@ def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
     """
 
     if weights == 'pascal_voc':
-        model_type = pretrained.DeepLabV3PascalDM1.TF_MODEL
+        model_type = pretrained.KerasModel.DEEPLAB_V3_DM1
         model_path = download_and_checksum_mlmodel(model_type)
         model = tf.keras.models.load_model(
             model_path, custom_objects={'tf': tf}, compile=False)

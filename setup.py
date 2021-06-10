@@ -14,7 +14,7 @@ setup(
     version=__version__,
     author='xadrianzetx',
     url='https://github.com/xadrianzetx/coral-deeplab',
-    description='Coral Edge TPU compilable version of DeepLab v3 Plus',
+    description='Coral Edge TPU compilable version of DeepLab v3',
     long_description=get_long_desc(),
     long_description_content_type='text/markdown',
     packages=find_packages(include=['coral_deeplab']),
@@ -23,9 +23,9 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Topic :: Scientific/Engineering :: Artificial Intelligence'
     ],
-    python_requires='>=3.7',
+    python_requires='==3.7.*',
     install_requires=[
         'numpy>=1.19.5',
-        'tensorflow-gpu>=2.4.0'
+        'tensorflow-gpu==2.4.0'
     ]
 )
