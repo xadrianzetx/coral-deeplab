@@ -91,13 +91,16 @@ class TestCoralDeepLabV3(unittest.TestCase):
     def test_pretrained_edgetpu_compile(self):
         """Test if model compiles from pretrained weights"""
 
-        model = cdl.applications.CoralDeepLabV3(weights='pascal_voc')
-        datagen = fake_dataset_generator((513, 513, 3), 10)
-        stdout = quantize_and_compile(model, datagen)
-        compiled = re.findall('Model compiled successfully', stdout)
+        alphas = [0.5, 1.0]
+        for alpha in alphas:
+            model = cdl.applications.CoralDeepLabV3(
+                weights='pascal_voc', alpha=alpha)
+            datagen = fake_dataset_generator((513, 513, 3), 10)
+            stdout = quantize_and_compile(model, datagen)
+            compiled = re.findall('Model compiled successfully', stdout)
 
-        if not compiled:
-            self.fail('Pretrained model not compiled')
+            if not compiled:
+                self.fail('Pretrained model not compiled')
 
 
 if __name__ == '__main__':
