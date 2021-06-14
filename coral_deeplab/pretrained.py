@@ -33,6 +33,11 @@ class KerasModel(MLModel):
         'filename': 'deeplabv3_mnv2_dm1_voc_tainaug_os16.h5',
         'checksum': 'b326724d7e89d8cc7f409edbf1b11105'
     }
+    DEEPLAB_V3_DM05 = {
+        'origin': '1J-8hCUNYxbWgazflv8CGVYgmqoFHxB_N',
+        'filename': 'deeplabv3_mnv2_dm05_voc_tainaug_os16.h5',
+        'checksum': '36e1e957a62848451db92c53abc1d7d7'
+    }
 
 
 class EdgeTPUModel(MLModel):
@@ -40,4 +45,9 @@ class EdgeTPUModel(MLModel):
         'origin': '1YmaaQ9qOxlMfB9eAI7roOqgeo4y7Mosg',
         'filename': 'deeplabv3_mnv2_dm1_voc_tainaug_os16_edgetpu.tflite',
         'checksum': '6c0ade5b647dc137f6231a9724cf65e6'
+    }
+    DEEPLAB_V3_DM05 = {
+        'origin': '1bukSOJf8JL_RSQwrCIypvzxxamEhO9cV',
+        'filename': 'deeplabv3_mnv2_dm05_voc_tainaug_os16_edgetpu.tflite',
+        'checksum': '2d3ad50d08c12dba4d5ea61f59bb0b79'
     }

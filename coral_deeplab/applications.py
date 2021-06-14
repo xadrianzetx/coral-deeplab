@@ -38,6 +38,7 @@ from coral_deeplab._blocks import (
 
 
 def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
+                   alpha: float = 1.0,
                    weights: Optional[str] = None,
                    n_classes: int = 30, **kwargs) -> tf.keras.Model:
     """DeepLab v3 implementation compilable to coral.ai Edge TPU.
@@ -53,6 +54,10 @@ def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
     ---------
     input_shape : tuple, default=(513, 513, 3)
         Input tensor shape.
+
+    alpha : float, default=1.0
+        Float between 0. and 1.
+        MobileNetV2 depth multiplier.
 
     weights : str, default=None
         One of None (random initialization) or `pascal_voc`
@@ -88,7 +93,13 @@ def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
     """
 
     if weights == 'pascal_voc':
-        model_type = pretrained.KerasModel.DEEPLAB_V3_DM1
+        if alpha == 0.5:
+            model_type = pretrained.KerasModel.DEEPLAB_V3_DM05
+
+        else:
+            # alpha 1.0 and default fallback for unsupported depths.
+            model_type = pretrained.KerasModel.DEEPLAB_V3_DM1
+
         model_path = download_and_checksum_mlmodel(model_type)
         model = tf.keras.models.load_model(
             model_path, custom_objects={'tf': tf}, compile=False)
@@ -103,7 +114,7 @@ def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
         raise ValueError('Non square inputs not supported.')
 
     inputs = Input(shape=input_shape)
-    aspp_in = mobilenetv2(inputs)
+    aspp_in = mobilenetv2(inputs, alpha)
     aspp_out = deeplab_aspp_module(aspp_in)
     outputs = deeplabv3_decoder(aspp_out, n_classes)
     name = 'CoralDeeplabV3'
