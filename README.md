@@ -55,8 +55,8 @@ All models have been tested with 513x513 input on fresh install of `Raspbian GNU
 |Model|Backbone|Depth mul.|ARM Cortex-A53 (RPi3B+)|ARM Cortex-A72 (RPi4)|
 |---|:---:|:---:|:---:|:---:|
 |[DeepLab v3 (google)](https://coral.ai/models/semantic-segmentation/)|MobileNet v2|1.0|~368.6 ms/iter (~2.7 FPS)|~147.5 ms/iter (~6.8 FPS)|
-|DeepLab v3 (this)|MobileNet v2|1.0|143.0 ms/iter (~7.0 FPS)|~43.7 ms/iter (~22.9 FPS)|
-|DeepLab v3 (this)|MobileNet v2|0.5|*TBA*|*TBA*|
+|DeepLab v3 (this)|MobileNet v2|1.0|~143.0 ms/iter (~7.0 FPS)|~43.7 ms/iter (~22.9 FPS)|
+|DeepLab v3 (this)|MobileNet v2|0.5|~129.4 ms/iter (~7.8 FPS)|~32.6 ms/iter (~30.6 FPS)|
 
 ## Results
 
