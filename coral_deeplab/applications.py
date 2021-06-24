@@ -33,7 +33,8 @@ from coral_deeplab._downloads import download_and_checksum_mlmodel
 from coral_deeplab._encoders import mobilenetv2
 from coral_deeplab._blocks import (
     deeplab_aspp_module,
-    deeplabv3_decoder
+    deeplabv3_decoder,
+    deeplabv3plus_decoder
 )
 
 
@@ -119,5 +120,85 @@ def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
     outputs = deeplabv3_decoder(aspp_out, n_classes)
     name = 'CoralDeeplabV3'
     model = tf.keras.Model(inputs=inputs, outputs=outputs, name=name)
+
+    return model
+
+
+def CoralDeepLabV3Plus(input_shape: tuple = (513, 513, 3),
+                       alpha: float = 1.0,
+                       weights: Optional[str] = None,
+                       n_classes: int = 30, **kwargs) -> tf.keras.Model:
+    """DeepLabV3 Plus implementation compilable to coral.ai Edge TPU.
+
+    Implementation follows original paper as close as possible, and
+    compiles to TPU up to decoder conv layer providing significant
+    speedup over CPU inference time.
+
+    MobileNetV2 is used as encoder, but last 3 blocks had been modified
+    to use atrous convolution in order to preserve spatial resolution.
+
+    Arguments
+    ---------
+    input_shape : tuple, default=(513, 513, 3)
+        Input tensor shape.
+
+    alpha : float, default=1.0
+        Float between 0. and 1.
+        MobileNetV2 depth multiplier.
+
+    weights : str, default=None
+        One of None (random initialization) or `pascal_voc`
+        (pre-training on Pascal VOC trainaug set).
+
+    n_classes : int, default=30
+        Number of segmentation classes.
+        By default set to cityscapes dayaset
+        number of class labels.
+
+    Returns
+    -------
+    model : tf.keras.Model
+        DeepLabV3Plus keras model instance.
+
+    References
+    ----------
+    - [1] https://arxiv.org/pdf/1802.02611.pdf
+    - [2] https://coral.ai/products/
+
+    Notes
+    -----
+    There is no last activation layer. Model outputs logits.
+    Last layer in the decoder (bilinear upsampling) has been
+    removed for performance reasons, but one in decoder is still
+    present making this model OS4 (output size is roughly 4x smaller
+    than input size).
+
+    Examples
+    --------
+    >>> import coral_deeplab as cdl
+    >>> model = cdl.applications.CoralDeepLabV3Plus()
+    >>> print(model.name)
+    'CoralDeepLabV3Plus'
+    """
+
+    if np.argmin(input_shape) == 0:
+        # assuming channels always
+        # gonna be smallest number
+        raise ValueError('Channels-first not supported.')
+
+    if input_shape[0] != input_shape[1]:
+        raise ValueError('Non square inputs not supported.')
+
+    inputs = Input(shape=input_shape)
+    aspp_in = mobilenetv2(inputs, alpha)
+    aspp_out = deeplab_aspp_module(aspp_in)
+    encoder = tf.keras.Model(inputs=inputs, outputs=aspp_out)
+
+    encoder_last = encoder.get_layer('concat_projection/relu')
+    encoder_skip = encoder.get_layer('expanded_conv_3/expand/relu')
+    outputs = deeplabv3plus_decoder(encoder_last.output,
+                                    encoder_skip.output, n_classes)
+    name = 'CoralDeeplabV3Plus'
+    model = tf.keras.Model(inputs=encoder.inputs, outputs=outputs, name=name)
 
     return model
