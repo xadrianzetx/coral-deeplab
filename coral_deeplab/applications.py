@@ -20,8 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = ['CoralDeepLabV3']
-
 from typing import Optional
 
 import numpy as np
@@ -36,6 +34,9 @@ from coral_deeplab._blocks import (
     deeplabv3_decoder,
     deeplabv3plus_decoder
 )
+
+
+__all__ = ['CoralDeepLabV3', 'CoralDeepLabV3Plus']
 
 
 def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
