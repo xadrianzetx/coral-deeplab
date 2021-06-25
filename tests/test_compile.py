@@ -72,7 +72,7 @@ class TestCoralDeepLabV3(unittest.TestCase):
             self.fail(str(e))
 
     @unittest.skipUnless(sys.platform.startswith('linux'), 'linux required')
-    def test_edgetpu_compiles(self):
+    def test_dlv3_edgetpu_compiles(self):
         """Test if model compiles to Edge TPU across input ranges"""
 
         supported_shapes = [192, 224, 513]
@@ -88,7 +88,7 @@ class TestCoralDeepLabV3(unittest.TestCase):
                 self.fail(msg)
 
     @unittest.skipUnless(sys.platform.startswith('linux'), 'linux required')
-    def test_pretrained_edgetpu_compile(self):
+    def test_dlv3_pretrained_edgetpu_compile(self):
         """Test if model compiles from pretrained weights"""
 
         alphas = [0.5, 1.0]
