@@ -102,6 +102,38 @@ class TestCoralDeepLabV3(unittest.TestCase):
             if not compiled:
                 self.fail('Pretrained model not compiled')
 
+    @unittest.skipUnless(sys.platform.startswith('linux'), 'linux required')
+    def test_dlv3plus_edgetpu_compile(self):
+        """Test if DeepLabV3Plus model compiles to Edge TPU across input ranges"""
+
+        supported_shapes = [192, 224, 513]
+        for shape in supported_shapes:
+            input_shape = (shape, shape, 3)
+            model = cdl.applications.CoralDeepLabV3Plus(input_shape)
+            datagen = fake_dataset_generator(input_shape, 10)
+            stdout = quantize_and_compile(model, datagen)
+            compiled = re.findall('Model compiled successfully', stdout)
+
+            if not compiled:
+                self.fail('Failed to compile DeepLabV3Plus '
+                          f'with input shape {input_shape}')
+
+    @unittest.skipUnless(sys.platform.startswith('linux'), 'linux required')
+    def test_dlv3plus_pretrained_edgetpu_compile(self):
+        """Test if pretrained DeepLabV3Plus model compiles to Edge TPU"""
+
+        alphas = [0.5, 1.0]
+        for alpha in alphas:
+            model = cdl.applications.CoralDeepLabV3Plus(
+                alpha=alpha, weights='pascal_voc')
+            datagen = fake_dataset_generator((513, 513, 3), 10)
+            stdout = quantize_and_compile(model, datagen)
+            compiled = re.findall('Model compiled successfully', stdout)
+
+            if not compiled:
+                self.fail('Failed to compile pretrainrd DeepLabV3Plus '
+                          f'with alpha {alpha}')
+
 
 if __name__ == '__main__':
     unittest.main()
