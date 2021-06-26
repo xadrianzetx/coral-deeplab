@@ -194,19 +194,7 @@ def CoralDeepLabV3Plus(input_shape: tuple = (513, 513, 3),
             model_path, custom_objects={'tf': tf}, compile=False)
         return model
 
-    if np.argmin(input_shape) == 0:
-        # assuming channels always
-        # gonna be smallest number
-        raise ValueError('Channels-first not supported.')
-
-    if input_shape[0] != input_shape[1]:
-        raise ValueError('Non square inputs not supported.')
-
-    inputs = Input(shape=input_shape)
-    aspp_in = mobilenetv2(inputs, alpha)
-    aspp_out = deeplab_aspp_module(aspp_in)
-    encoder = tf.keras.Model(inputs=inputs, outputs=aspp_out)
-
+    encoder = CoralDeepLabV3(input_shape, alpha)
     encoder_last = encoder.get_layer('concat_projection/relu')
     encoder_skip = encoder.get_layer('expanded_conv_3/expand/relu')
     outputs = deeplabv3plus_decoder(encoder_last.output,
