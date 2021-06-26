@@ -182,6 +182,18 @@ def CoralDeepLabV3Plus(input_shape: tuple = (513, 513, 3),
     'CoralDeepLabV3Plus'
     """
 
+    if weights == 'pascal_voc':
+        if alpha == 0.5:
+            model_type = pretrained.KerasModel.DEEPLAB_V3_PLUS_DM05
+
+        else:
+            model_type = pretrained.KerasModel.DEEPLAB_V3_PLUS_DM1
+
+        model_path = download_and_checksum_mlmodel(model_type)
+        model = tf.keras.models.load_model(
+            model_path, custom_objects={'tf': tf}, compile=False)
+        return model
+
     if np.argmin(input_shape) == 0:
         # assuming channels always
         # gonna be smallest number
