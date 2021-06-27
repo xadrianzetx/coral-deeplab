@@ -23,7 +23,6 @@
 import tensorflow as tf
 from tensorflow.keras.layers import (
     Conv2D,
-    SeparableConv2D,
     DepthwiseConv2D,
     BatchNormalization,
     AveragePooling2D,
@@ -32,8 +31,6 @@ from tensorflow.keras.layers import (
     Lambda,
     ReLU
 )
-
-from coral_deeplab.layers import UpSampling2DCompatV1
 
 
 L2 = 4e-5
@@ -180,9 +177,8 @@ def deeplabv3_decoder(inputs: tf.Tensor, n_classes: int) -> tf.Tensor:
     return outputs
 
 
-def deeplab_decoder(inputs: tf.Tensor, skip_con: tf.Tensor,
-                    output_shape: tuple, n_classes: int,
-                    bn_epsilon: float) -> tf.Tensor:
+def deeplabv3plus_decoder(inputs: tf.Tensor, skip_con: tf.Tensor,
+                          n_classes: int) -> tf.Tensor:
     """Implements DeepLabV3Plus decoder module.
 
     Arguments
@@ -197,47 +193,42 @@ def deeplab_decoder(inputs: tf.Tensor, skip_con: tf.Tensor,
     n_classes : int
         Final number of feature maps.
 
-    bn_epsilon : float
-        Epsilon used in batch
-        normalization layer.
-
     Returns
     -------
     outputs : tf.Tensor
         Output tensor.
-
-    Notes
-    -----
-    This implementation is using output stride 16.
-    Outputs logits. There is no final activation layer.
     """
 
-    if n_classes > 50:
-        print('Warning - model might not compile'
-              ' due to upsampling of large tensors.'
-              ' Consider decreasing number of'
-              ' segmentation classes.')
+    skip = Conv2D(48, 1, padding='same',
+                  kernel_regularizer=tf.keras.regularizers.L2(L2),
+                  use_bias=False, name='skip_con_conv')(skip_con)
+    skip = BatchNormalization(momentum=BN_MOMENTUM,
+                              name='skip_con_conv/BatchNorm')(skip)
+    skip = ReLU(name='skip_con_conv/relu')(skip)
 
-    skip = Conv2D(48, 1, padding='same', use_bias=False,
-                  name='project_0')(skip_con)
-    skip = BatchNormalization(epsilon=bn_epsilon)(skip)
-    skip = ReLU()(skip)
+    _, *size, _ = tf.keras.backend.int_shape(skip)
+    aspp = Lambda(
+        lambda t: tf.compat.v1.image.resize_bilinear(
+            t, size=size, align_corners=True), name='aspp_resize')(inputs)
 
-    _, *skip_shape, _ = tf.keras.backend.int_shape(skip)
-    aspp_up = UpSampling2DCompatV1(output_shape=skip_shape,
-                                   interpolation='bilinear')(inputs)
-    x = Concatenate()([aspp_up, skip])
+    x = tf.keras.layers.Concatenate(name='decoder_concat')([aspp, skip])
 
-    x = SeparableConv2D(256, 3, padding='same', use_bias=False)(x)
-    x = BatchNormalization(epsilon=bn_epsilon)(x)
-    x = ReLU()(x)
+    x = Conv2D(256, 3, padding='same', use_bias=False,
+               kernel_regularizer=tf.keras.regularizers.L2(L2),
+               name='decoder_conv_1')(x)
+    x = BatchNormalization(momentum=BN_MOMENTUM,
+                           name='decoder_conv_1/BatchNorm')(x)
+    x = ReLU(name='decoder_conv_1/relu')(x)
 
-    x = SeparableConv2D(256, 3, padding='same', use_bias=False)(x)
-    x = BatchNormalization(epsilon=bn_epsilon)(x)
-    x = ReLU()(x)
+    x = Conv2D(256, 3, padding='same', use_bias=False,
+               kernel_regularizer=tf.keras.regularizers.L2(L2),
+               name='decoder_conv_2')(x)
+    x = BatchNormalization(momentum=BN_MOMENTUM,
+                           name='decoder_conv_2/BatchNorm')(x)
+    x = ReLU(name='decoder_conv_2/relu')(x)
 
-    outputs = SeparableConv2D(n_classes, 3, padding='same', use_bias=False)(x)
-    outputs = UpSampling2DCompatV1(output_shape=output_shape,
-                                   interpolation='bilinear')(outputs)
+    outputs = Conv2D(n_classes, 1, padding='same',
+                     kernel_regularizer=tf.keras.regularizers.L2(L2),
+                     name='logits/semantic')(x)
 
     return outputs

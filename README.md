@@ -1,6 +1,6 @@
 # coral-deeplab
 
-[Coral Edge TPU](https://coral.ai/products/) compilable version of DeepLab v3 implemented in `tf.keras` with pretrained weights and Edge TPU pre-compiled models included.
+[Coral Edge TPU](https://coral.ai/products/) compilable version of DeepLab v3 and DeepLab v3 Plus implemented in `tf.keras` with pretrained weights and Edge TPU pre-compiled models included.
 
 Implementation follows original paper as close as possible, while still being compatible with Edge TPU. The only difference is that last upsampling layer has been removed from decoder due to performance reasons. Thanks to multi subgraph support in `edgetpu_compiler`, model runs almost all operations on TPU, where [original model](https://coral.ai/models/semantic-segmentation/) delegates entirety of decoder to run on CPU.
 
