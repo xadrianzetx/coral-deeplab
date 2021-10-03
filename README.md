@@ -31,7 +31,7 @@ isinstance(model, tf.keras.Model)
 import tensorflow as tf
 import coral_deeplab as cdl
 
-model = cdl.applications.CoralDeepLabV3(weights='pascal_voc')
+model = cdl.applications.CoralDeepLabV3(weights="pascal_voc")
 isinstance(model, tf.keras.Model)
 # True
 ```
@@ -44,7 +44,7 @@ import tflite_runtime.interpreter as tflite
 
 interpreter = tflite.Interpreter(
     cdl.from_precompiled(cdl.pretrained.EdgeTPUModel.DEEPLAB_V3_DM1),
-    experimental_delegates=[tflite.load_delegate('libedgetpu.so.1)]
+    experimental_delegates=[tflite.load_delegate("libedgetpu.so.1")]
 )
 ```
 
