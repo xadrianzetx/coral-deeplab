@@ -32,19 +32,11 @@ jobs:
         pip install flake8
     
     - name: Install Edge TPU compiler
-      # can't compile models with edgetpu-compiler v16.0 from distribution
-      # so temporarily pulling v14.0 from edgetpu repo
-      # run : |
-      #   curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-      #   echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | sudo tee /etc/apt/sources.list.d/coral-edgetpu.list
-      #   sudo apt-get update
-      #   sudo apt-get install edgetpu-compiler
-      #   edgetpu_compiler -v
       run: |
         chmod +x compiler/compiler.sh
         ./compiler/compiler.sh
         edgetpu_compiler -v
-    
+
     - name: Lint
       run: |
         # stop the build if there are Python syntax errors or undefined names
