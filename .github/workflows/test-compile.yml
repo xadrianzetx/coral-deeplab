@@ -30,12 +30,6 @@ jobs:
         pip install --upgrade setuptools
         pip install -r requirements.txt
         pip install flake8
-    
-    - name: Install Edge TPU compiler
-      run: |
-        chmod +x compiler/compiler.sh
-        ./compiler/compiler.sh
-        edgetpu_compiler -v
 
     - name: Lint
       run: |
