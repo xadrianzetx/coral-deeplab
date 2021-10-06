@@ -48,6 +48,11 @@ interpreter = tflite.Interpreter(
 )
 ```
 
+## Compiler
+
+Use `edgetpu_compiler` version `14.1` or `15.0` to compile finetuned or trained from scratch models. Correct version can be obtained
+by running `./compiler/compiler.sh` or [here](https://github.com/google-coral/edgetpu/issues/480).
+
 ## Latency
 
 All models have been tested with 513x513 input on fresh install of `Raspbian GNU/Linux 10 (buster)`.
