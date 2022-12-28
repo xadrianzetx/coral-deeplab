@@ -87,7 +87,7 @@ class TestCoralDeepLabV3(unittest.TestCase):
                 msg = f'Model not compiled for shape {input_shape}'
                 self.fail(msg)
 
-    @unittest.skipUnless(sys.platform.startswith('linux'), 'linux required')
+    @unittest.skip('Finetuning was temporarily disabled.')
     def test_dlv3_pretrained_edgetpu_compile(self):
         """Test if model compiles from pretrained weights"""
 
@@ -118,7 +118,7 @@ class TestCoralDeepLabV3(unittest.TestCase):
                 self.fail('Failed to compile DeepLabV3Plus '
                           f'with input shape {input_shape}')
 
-    @unittest.skipUnless(sys.platform.startswith('linux'), 'linux required')
+    @unittest.skip('Finetuning was temporarily disabled.')
     def test_dlv3plus_pretrained_edgetpu_compile(self):
         """Test if pretrained DeepLabV3Plus model compiles to Edge TPU"""
 

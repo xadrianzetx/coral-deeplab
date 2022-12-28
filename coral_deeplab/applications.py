@@ -20,14 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Optional
-
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import Input
 
-from coral_deeplab import pretrained
-from coral_deeplab._downloads import download_and_checksum_mlmodel
 from coral_deeplab._encoders import mobilenetv2
 from coral_deeplab._blocks import (
     deeplab_aspp_module,
@@ -41,7 +37,6 @@ __all__ = ['CoralDeepLabV3', 'CoralDeepLabV3Plus']
 
 def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
                    alpha: float = 1.0,
-                   weights: Optional[str] = None,
                    n_classes: int = 30, **kwargs) -> tf.keras.Model:
     """DeepLab v3 implementation compilable to coral.ai Edge TPU.
 
@@ -60,10 +55,6 @@ def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
     alpha : float, default=1.0
         Float between 0. and 1.
         MobileNetV2 depth multiplier.
-
-    weights : str, default=None
-        One of None (random initialization) or `pascal_voc`
-        (pre-training on Pascal VOC trainaug set).
 
     n_classes : int, default=30
         Number of segmentation classes.
@@ -94,19 +85,6 @@ def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
     'CoralDeepLabV3'
     """
 
-    if weights == 'pascal_voc':
-        if alpha == 0.5:
-            model_type = pretrained.KerasModel.DEEPLAB_V3_DM05
-
-        else:
-            # alpha 1.0 and default fallback for unsupported depths.
-            model_type = pretrained.KerasModel.DEEPLAB_V3_DM1
-
-        model_path = download_and_checksum_mlmodel(model_type)
-        model = tf.keras.models.load_model(
-            model_path, custom_objects={'tf': tf}, compile=False)
-        return model
-
     if np.argmin(input_shape) == 0:
         # assuming channels always
         # gonna be smallest number
@@ -127,7 +105,6 @@ def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
 
 def CoralDeepLabV3Plus(input_shape: tuple = (513, 513, 3),
                        alpha: float = 1.0,
-                       weights: Optional[str] = None,
                        n_classes: int = 30, **kwargs) -> tf.keras.Model:
     """DeepLabV3 Plus implementation compilable to coral.ai Edge TPU.
 
@@ -146,10 +123,6 @@ def CoralDeepLabV3Plus(input_shape: tuple = (513, 513, 3),
     alpha : float, default=1.0
         Float between 0. and 1.
         MobileNetV2 depth multiplier.
-
-    weights : str, default=None
-        One of None (random initialization) or `pascal_voc`
-        (pre-training on Pascal VOC trainaug set).
 
     n_classes : int, default=30
         Number of segmentation classes.
@@ -181,18 +154,6 @@ def CoralDeepLabV3Plus(input_shape: tuple = (513, 513, 3),
     >>> print(model.name)
     'CoralDeepLabV3Plus'
     """
-
-    if weights == 'pascal_voc':
-        if alpha == 0.5:
-            model_type = pretrained.KerasModel.DEEPLAB_V3_PLUS_DM05
-
-        else:
-            model_type = pretrained.KerasModel.DEEPLAB_V3_PLUS_DM1
-
-        model_path = download_and_checksum_mlmodel(model_type)
-        model = tf.keras.models.load_model(
-            model_path, custom_objects={'tf': tf}, compile=False)
-        return model
 
     encoder = CoralDeepLabV3(input_shape, alpha)
     encoder_last = encoder.get_layer('concat_projection/relu')
