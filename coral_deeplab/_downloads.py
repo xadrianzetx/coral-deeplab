@@ -20,19 +20,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os
 import hashlib
-import requests
+import os
 from typing import Optional
 
-from coral_deeplab.pretrained import MLModel, EdgeTPUModel
+import requests
+
+from coral_deeplab.pretrained import EdgeTPUModel
+from coral_deeplab.pretrained import MLModel
 
 
-GOOGLE_DRIVE_EXPORT_URL = 'https://docs.google.com/uc?export=download'
+GOOGLE_DRIVE_EXPORT_URL = "https://docs.google.com/uc?export=download"
 
 
-def download_and_checksum_mlmodel(model: MLModel,
-                                  dst: Optional[str] = None) -> str:
+def download_and_checksum_mlmodel(model: MLModel, dst: Optional[str] = None) -> str:
     """Downloads model from google drive and checks it md5sum.
 
     Arguments
@@ -56,24 +57,24 @@ def download_and_checksum_mlmodel(model: MLModel,
     if md5sum fails.
     """
 
-    filename = model.value.get('filename')
+    filename = model.value.get("filename")
     module_dir = os.path.dirname(os.path.realpath(__file__))
     filepath = os.path.join(module_dir if not dst else dst, filename)
 
     if os.path.isfile(filepath):
         return filepath
 
-    print(f'Attempting to download {filename}')
-    origin = model.value.get('origin')
-    response = requests.get(GOOGLE_DRIVE_EXPORT_URL, params={'id': origin})
+    print(f"Attempting to download {filename}")
+    origin = model.value.get("origin")
+    response = requests.get(GOOGLE_DRIVE_EXPORT_URL, params={"id": origin})
 
-    with open(filepath, 'wb') as file:
+    with open(filepath, "wb") as file:
         checksum = hashlib.md5(response.content)
         file.write(response.content)
 
-    if checksum.hexdigest() != model.value.get('checksum'):
+    if checksum.hexdigest() != model.value.get("checksum"):
         os.remove(filepath)
-        raise Warning(f'md5sum failed for {filename} and file was deleted.')
+        raise Warning(f"md5sum failed for {filename} and file was deleted.")
 
     return filepath
 
@@ -98,8 +99,7 @@ def from_precompiled(model: EdgeTPUModel, dest: Optional[str] = None) -> str:
     """
 
     if not isinstance(model, EdgeTPUModel):
-        raise ValueError('Incorrect model type specified. '
-                         'Use one of cdl.pretrained.EdgeTPUModel')
+        raise ValueError("Incorrect model type specified. Use one of cdl.pretrained.EdgeTPUModel.")
 
     model = download_and_checksum_mlmodel(model, dest)
     return model

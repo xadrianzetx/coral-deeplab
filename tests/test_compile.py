@@ -1,9 +1,9 @@
 import os
 import re
-import sys
-import uuid
-import unittest
 import subprocess
+import sys
+import unittest
+import uuid
 
 import numpy as np
 import tensorflow as tf
@@ -15,9 +15,10 @@ def fake_dataset_generator(shape, n_iter):
     def dataset():
         for _ in range(n_iter):
             data = np.random.randn(*shape)
-            data *= (1 / 255)
+            data *= 1 / 255
             batch = np.expand_dims(data, axis=0)
             yield [batch.astype(np.float32)]
+
     return dataset
 
 
@@ -33,12 +34,12 @@ def quantize_and_compile(model, dataset):
 
     # quantize
     quantized = converter.convert()
-    model_name = f'{uuid.uuid4()}.tflite'
+    model_name = f"{uuid.uuid4()}.tflite"
     model_path = os.path.join(os.getcwd(), model_name)
-    open(model_path, 'wb').write(quantized)
+    open(model_path, "wb").write(quantized)
 
     # compile
-    cmd = ['edgetpu_compiler', '-a', '-s', model_path]
+    cmd = ["edgetpu_compiler", "-a", "-s", model_path]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     p.wait()
     stdout = p.stdout.read()
@@ -47,7 +48,6 @@ def quantize_and_compile(model, dataset):
 
 
 class TestCoralDeepLabV3(unittest.TestCase):
-
     def test_channel_first(self):
         """Test if exception is rised when channel-first used"""
 
@@ -66,12 +66,12 @@ class TestCoralDeepLabV3(unittest.TestCase):
         """Test if pre-trained dm1 voc weights load."""
 
         try:
-            cdl.applications.CoralDeepLabV3(weights='pascal_voc')
+            cdl.applications.CoralDeepLabV3(weights="pascal_voc")
 
         except Exception as e:
             self.fail(str(e))
 
-    @unittest.skipUnless(sys.platform.startswith('linux'), 'linux required')
+    @unittest.skipUnless(sys.platform.startswith("linux"), "linux required")
     def test_dlv3_edgetpu_compiles(self):
         """Test if model compiles to Edge TPU across input ranges"""
 
@@ -81,28 +81,27 @@ class TestCoralDeepLabV3(unittest.TestCase):
             model = cdl.applications.CoralDeepLabV3(input_shape)
             datagen = fake_dataset_generator(input_shape, 10)
             stdout = quantize_and_compile(model, datagen)
-            compiled = re.findall('Model compiled successfully', stdout)
+            compiled = re.findall("Model compiled successfully", stdout)
 
             if not compiled:
-                msg = f'Model not compiled for shape {input_shape}'
+                msg = f"Model not compiled for shape {input_shape}"
                 self.fail(msg)
 
-    @unittest.skip('Finetuning was temporarily disabled.')
+    @unittest.skip("Finetuning was temporarily disabled.")
     def test_dlv3_pretrained_edgetpu_compile(self):
         """Test if model compiles from pretrained weights"""
 
         alphas = [0.5, 1.0]
         for alpha in alphas:
-            model = cdl.applications.CoralDeepLabV3(
-                weights='pascal_voc', alpha=alpha)
+            model = cdl.applications.CoralDeepLabV3(weights="pascal_voc", alpha=alpha)
             datagen = fake_dataset_generator((513, 513, 3), 10)
             stdout = quantize_and_compile(model, datagen)
-            compiled = re.findall('Model compiled successfully', stdout)
+            compiled = re.findall("Model compiled successfully", stdout)
 
             if not compiled:
-                self.fail('Pretrained model not compiled')
+                self.fail("Pretrained model not compiled")
 
-    @unittest.skipUnless(sys.platform.startswith('linux'), 'linux required')
+    @unittest.skipUnless(sys.platform.startswith("linux"), "linux required")
     def test_dlv3plus_edgetpu_compile(self):
         """Test if DeepLabV3Plus model compiles to Edge TPU across input ranges"""
 
@@ -112,28 +111,25 @@ class TestCoralDeepLabV3(unittest.TestCase):
             model = cdl.applications.CoralDeepLabV3Plus(input_shape)
             datagen = fake_dataset_generator(input_shape, 10)
             stdout = quantize_and_compile(model, datagen)
-            compiled = re.findall('Model compiled successfully', stdout)
+            compiled = re.findall("Model compiled successfully", stdout)
 
             if not compiled:
-                self.fail('Failed to compile DeepLabV3Plus '
-                          f'with input shape {input_shape}')
+                self.fail(f"Failed to compile DeepLabV3Plus with input shape {input_shape}")
 
-    @unittest.skip('Finetuning was temporarily disabled.')
+    @unittest.skip("Finetuning was temporarily disabled.")
     def test_dlv3plus_pretrained_edgetpu_compile(self):
         """Test if pretrained DeepLabV3Plus model compiles to Edge TPU"""
 
         alphas = [0.5, 1.0]
         for alpha in alphas:
-            model = cdl.applications.CoralDeepLabV3Plus(
-                alpha=alpha, weights='pascal_voc')
+            model = cdl.applications.CoralDeepLabV3Plus(alpha=alpha, weights="pascal_voc")
             datagen = fake_dataset_generator((513, 513, 3), 10)
             stdout = quantize_and_compile(model, datagen)
-            compiled = re.findall('Model compiled successfully', stdout)
+            compiled = re.findall("Model compiled successfully", stdout)
 
             if not compiled:
-                self.fail('Failed to compile pretrainrd DeepLabV3Plus '
-                          f'with alpha {alpha}')
+                self.fail(f"Failed to compile pretrainrd DeepLabV3Plus with alpha {alpha}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
