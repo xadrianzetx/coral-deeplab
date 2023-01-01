@@ -33,6 +33,12 @@ from coral_deeplab.pretrained import MLModel
 GOOGLE_DRIVE_EXPORT_URL = "https://docs.google.com/uc?export=download"
 
 
+class ChecksumFailedError(Exception):
+    """Raised when downloaded model MD5 checksum does not match expected for this artifact."""
+
+    ...
+
+
 def download_and_checksum_mlmodel(model: MLModel, dst: Optional[str] = None) -> str:
     """Downloads model from google drive and checks it md5sum.
 
@@ -74,7 +80,7 @@ def download_and_checksum_mlmodel(model: MLModel, dst: Optional[str] = None) -> 
 
     if checksum.hexdigest() != model.value.get("checksum"):
         os.remove(filepath)
-        raise Warning(f"md5sum failed for {filename} and file was deleted.")
+        raise ChecksumFailedError(f"md5sum failed for {filename} and file was deleted.")
 
     return filepath
 
