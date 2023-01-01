@@ -27,12 +27,12 @@ python3 examples/semantic_segmentation.py \
 
 import argparse
 
-import numpy as np
 from PIL import Image
-
 import cv2
-import coral_deeplab as cdl
+import numpy as np
 import tflite_runtime.interpreter as tflite
+
+import coral_deeplab as cdl
 
 
 def create_pascal_label_colormap():

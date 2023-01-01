@@ -20,8 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import tensorflow as tf
 from typing import Tuple
+
+import tensorflow as tf
 
 
 class UpSampling2DCompatV1(tf.keras.layers.Layer):
@@ -43,10 +44,13 @@ class UpSampling2DCompatV1(tf.keras.layers.Layer):
         at the corner pixels.
     """
 
-    def __init__(self, output_shape: Tuple[int, int],
-                 interpolation: str = 'nearest',
-                 align_corners: bool = False,
-                 **kwargs):
+    def __init__(
+        self,
+        output_shape: Tuple[int, int],
+        interpolation: str = "nearest",
+        align_corners: bool = False,
+        **kwargs,
+    ):
 
         super().__init__()
         self.out_shape = output_shape
@@ -55,27 +59,27 @@ class UpSampling2DCompatV1(tf.keras.layers.Layer):
 
     def build(self, input_shape: tuple):
 
-        interpolations = ['nearest', 'bilinear', 'cubic']
+        interpolations = ["nearest", "bilinear", "cubic"]
         if self.interpolation not in interpolations:
-            raise ValueError('Interpolation should be one of'
-                             f'{interpolations}, got {self.interpolation}')
+            raise ValueError(
+                "Interpolation should be one of" f"{interpolations}, got {self.interpolation}"
+            )
 
     def call(self, inputs: tf.Tensor, **kwargs) -> tf.Tensor:
 
         return tf.compat.v1.image.resize(
-            inputs,
-            self.out_shape,
-            method=self.interpolation,
-            align_corners=self.align_corners
+            inputs, self.out_shape, method=self.interpolation, align_corners=self.align_corners
         )
 
     def get_config(self) -> dict:
 
         config = super().get_config()
-        config.update({
-            'output_shape': self.out_shape,
-            'interpolation': self.interpolation,
-            'align_corners': self.align_corners
-        })
+        config.update(
+            {
+                "output_shape": self.out_shape,
+                "interpolation": self.interpolation,
+                "align_corners": self.align_corners,
+            }
+        )
 
         return config

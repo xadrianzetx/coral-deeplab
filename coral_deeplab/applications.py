@@ -24,20 +24,18 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import Input
 
+from coral_deeplab._blocks import deeplab_aspp_module
+from coral_deeplab._blocks import deeplabv3_decoder
+from coral_deeplab._blocks import deeplabv3plus_decoder
 from coral_deeplab._encoders import mobilenetv2
-from coral_deeplab._blocks import (
-    deeplab_aspp_module,
-    deeplabv3_decoder,
-    deeplabv3plus_decoder
-)
 
 
-__all__ = ['CoralDeepLabV3', 'CoralDeepLabV3Plus']
+__all__ = ["CoralDeepLabV3", "CoralDeepLabV3Plus"]
 
 
-def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
-                   alpha: float = 1.0,
-                   n_classes: int = 30, **kwargs) -> tf.keras.Model:
+def CoralDeepLabV3(
+    input_shape: tuple = (513, 513, 3), alpha: float = 1.0, n_classes: int = 30, **kwargs
+) -> tf.keras.Model:
     """DeepLab v3 implementation compilable to coral.ai Edge TPU.
 
     Implementation follows original paper as close as possible, and
@@ -88,24 +86,24 @@ def CoralDeepLabV3(input_shape: tuple = (513, 513, 3),
     if np.argmin(input_shape) == 0:
         # assuming channels always
         # gonna be smallest number
-        raise ValueError('Channels-first not supported.')
+        raise ValueError("Channels-first not supported.")
 
     if input_shape[0] != input_shape[1]:
-        raise ValueError('Non square inputs not supported.')
+        raise ValueError("Non square inputs not supported.")
 
     inputs = Input(shape=input_shape)
     aspp_in = mobilenetv2(inputs, alpha)
     aspp_out = deeplab_aspp_module(aspp_in)
     outputs = deeplabv3_decoder(aspp_out, n_classes)
-    name = 'CoralDeeplabV3'
+    name = "CoralDeeplabV3"
     model = tf.keras.Model(inputs=inputs, outputs=outputs, name=name)
 
     return model
 
 
-def CoralDeepLabV3Plus(input_shape: tuple = (513, 513, 3),
-                       alpha: float = 1.0,
-                       n_classes: int = 30, **kwargs) -> tf.keras.Model:
+def CoralDeepLabV3Plus(
+    input_shape: tuple = (513, 513, 3), alpha: float = 1.0, n_classes: int = 30, **kwargs
+) -> tf.keras.Model:
     """DeepLabV3 Plus implementation compilable to coral.ai Edge TPU.
 
     Implementation follows original paper as close as possible, and
@@ -156,11 +154,10 @@ def CoralDeepLabV3Plus(input_shape: tuple = (513, 513, 3),
     """
 
     encoder = CoralDeepLabV3(input_shape, alpha)
-    encoder_last = encoder.get_layer('concat_projection/relu')
-    encoder_skip = encoder.get_layer('expanded_conv_3/expand/relu')
-    outputs = deeplabv3plus_decoder(encoder_last.output,
-                                    encoder_skip.output, n_classes)
-    name = 'CoralDeeplabV3Plus'
+    encoder_last = encoder.get_layer("concat_projection/relu")
+    encoder_skip = encoder.get_layer("expanded_conv_3/expand/relu")
+    outputs = deeplabv3plus_decoder(encoder_last.output, encoder_skip.output, n_classes)
+    name = "CoralDeeplabV3Plus"
     model = tf.keras.Model(inputs=encoder.inputs, outputs=outputs, name=name)
 
     return model
