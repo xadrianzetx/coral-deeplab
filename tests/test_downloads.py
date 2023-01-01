@@ -2,6 +2,7 @@ import os
 import unittest
 
 import coral_deeplab as cdl
+from coral_deeplab._downloads import ChecksumFailedError
 from coral_deeplab._downloads import download_and_checksum_mlmodel
 
 
@@ -25,7 +26,7 @@ class TestModelDownloadModule(unittest.TestCase):
     def test_invalid_checksum(self):
         """Test if checksum"""
 
-        with self.assertRaises(Warning):
+        with self.assertRaises(ChecksumFailedError):
             download_and_checksum_mlmodel(TestModel.TEST_INVALID)
 
         target_path = os.path.join(LIBRARY_DIR, "invalid.model")
