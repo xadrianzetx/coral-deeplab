@@ -1,3 +1,44 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coral-deeplab"
+description = "Coral Edge TPU compilable version of DeepLab v3"
+authors = [
+  { name = "Adrian Zuber", email = "xadrianzetx@gmail.com" },
+]
+requires-python = ">=3.7"
+license = { text = "MIT" }
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+  "numpy <= 1.24.0",
+  "tensorflow-gpu >= 2.4.0"
+]
+dynamic = ["version"]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[tool.setuptools]
+packages = ["coral_deeplab"]
+
+[tool.setuptools.dynamic]
+version = { attr = "coral_deeplab.__version__" }
+
 [tool.black]
 line-length = 99
 target-version = ["py38"]
